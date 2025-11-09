@@ -1,0 +1,16 @@
+Essential information
+Identification: A unique work order number for tracking. Randomly Generated 8 digit letters/number/ that is never duplucated. Eventually it will include static details as well like site location, room location, and ticket type.
+Asset details: A specific asset code and its exact location.
+Work description: A clear outline of the problem and the scope of work required.
+Priority level: A designation (e.g., high, medium, low) to communicate urgency.
+Resources: A list of all necessary parts, tools, and other resources.
+Safety: Any specific safety requirements or notes.
+Labor: Estimated start and completion dates.
+Personnel: The name of the assigned technician or team.
+Completion details: A section for notes, photos, and sign-offs upon completion.
+
+Recommended additions
+Requester details: The name and contact information of the person who submitted the request.
+Maintenance history: A record of past maintenance performed on the asset.
+Attachments: The ability to attach photos or other relevant documents.
+Work order type: A designation such as "preventive," "corrective," or "inspection".

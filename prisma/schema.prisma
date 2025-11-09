@@ -1,0 +1,149 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   @default("USER")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  assignedWorkOrders WorkOrder[] @relation("AssignedWorkOrders")
+  createdWorkOrders  WorkOrder[] @relation("CreatedWorkOrders")
+  requestedWorkOrders WorkOrder[] @relation("RequestedWorkOrders")
+  assets             Asset[]
+  activityLogs       ActivityLog[]
+
+  @@map("users")
+}
+
+model Asset {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  assetTag    String?  @unique
+  category    String
+  location    String
+  status      String   @default("ACTIVE")
+  purchaseDate DateTime?
+  purchaseCost Float?
+  warrantyEnd  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  workOrders    WorkOrder[]
+  createdBy     User?    @relation(fields: [createdById], references: [id])
+  createdById   String?
+
+  @@map("assets")
+  @@index([category]) // Add index for category filtering
+  @@index([location]) // Add index for location filtering
+  @@index([status]) // Add index for status filtering
+  @@index([createdById]) // Add index for created by lookups
+}
+
+model WorkOrder {
+  id                String   @id @default(cuid())
+  workOrderNumber  String   @unique // Random 8-digit alphanumeric
+
+  // Essential information
+  title             String
+  description       String?
+  priority          String   @default("MEDIUM") // HIGH, MEDIUM, LOW
+  status            String   @default("OPEN")    // OPEN, IN_PROGRESS, COMPLETED, CANCELLED, ON_HOLD
+
+  // Asset details
+  assetId           String
+  asset             Asset    @relation(fields: [assetId], references: [id])
+  assetLocation     String?  // Specific location of the asset for this work
+
+  // Work details
+  workType          String   // "preventive", "corrective", "inspection"
+  scopeOfWork       String?  // Detailed scope of work required
+
+  // Resources
+  partsRequired     String?  // List of necessary parts
+  toolsRequired     String?  // List of necessary tools
+  otherResources    String?  // Other resources needed
+
+  // Safety
+  safetyNotes       String?  // Specific safety requirements or notes
+
+  // Labor and scheduling
+  estimatedStart    DateTime?
+  estimatedCompletion DateTime?
+  actualStart       DateTime?
+  actualCompletion  DateTime?
+  completedAt       DateTime?
+
+  // Personnel
+  assignedTo        User?    @relation("AssignedWorkOrders", fields: [assignedToId], references: [id])
+  assignedToId      String?
+  createdBy         User     @relation("CreatedWorkOrders", fields: [createdById], references: [id])
+  createdById       String
+  requestedBy       User?    @relation("RequestedWorkOrders", fields: [requestedById], references: [id])
+  requestedById     String?
+
+  // Completion details
+  completionNotes   String?  // Notes upon completion
+  signOff           String?  // Digital sign-off or confirmation
+
+  // Attachments (store as JSON array of file paths/URLs)
+  attachments       String?  // JSON array of photo/document URLs
+
+  // Ticket type and location details
+  ticketType        String?  // Type of ticket for the work order number system
+  siteLocation      String?  // Site location for work order number system
+  roomLocation      String?  // Room location for work order number system
+
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("work_orders")
+  @@index([status]) // Add index for status filtering
+  @@index([priority]) // Add index for priority filtering
+  @@index([assetId]) // Add index for asset lookups
+  @@index([createdById]) // Add index for created by lookups
+  @@index([assignedToId]) // Add index for assignment lookups
+  @@index([workOrderNumber]) // Add index for work order number lookups
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+
+  // Event details
+  action      String   // "created", "updated", "deleted", "status_changed", "assigned", "completed"
+  entityType  String   // "work_order", "asset", "user"
+  entityId    String   // ID of the related entity
+  entityName  String?  // Name/identifier of the entity for display
+
+  // Description
+  description String   // Human-readable description of what happened
+  details     String?  // JSON string with additional details (old values, new values, etc.)
+
+  // User who performed the action
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  userName    String   // Denormalized for performance
+
+  // Timestamps
+  createdAt   DateTime @default(now())
+
+  @@map("activity_logs")
+  @@index([entityType, entityId]) // Add composite index for queries
+  @@index([createdAt]) // Add index for time-based queries
+}
