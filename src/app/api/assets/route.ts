@@ -97,6 +97,9 @@ export async function POST(request: NextRequest) {
         ...validatedData,
         purchaseDate: validatedData.purchaseDate ? new Date(validatedData.purchaseDate) : null,
         warrantyEnd: validatedData.warrantyEnd ? new Date(validatedData.warrantyEnd) : null,
+        purchaseCost: typeof validatedData.purchaseCost === 'string'
+          ? (parseFloat(validatedData.purchaseCost) || null)
+          : validatedData.purchaseCost,
         createdById: session.user.id,
       },
       include: {

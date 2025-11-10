@@ -16,9 +16,16 @@ export const createAssetSchema = z.object({
   category: z.enum(['equipment', 'vehicle', 'building', 'tool', 'other']),
   location: limitedString(255),
   status: z.enum(['ACTIVE', 'INACTIVE', 'MAINTENANCE', 'RETIRED']).default('ACTIVE'),
-  purchaseDate: z.string().datetime().optional().nullable(),
-  purchaseCost: z.number().min(0, 'Purchase cost must be positive').optional().nullable(),
-  warrantyEnd: z.string().datetime().optional().nullable(),
+  purchaseDate: z.string().optional().nullable(),
+  purchaseCost: z.union([
+    z.string().transform(val => {
+      if (!val || val.trim() === '') return null
+      const num = parseFloat(val)
+      return isNaN(num) ? null : num
+    }),
+    z.number().min(0, 'Purchase cost must be positive').optional().nullable()
+  ]).optional().nullable(),
+  warrantyEnd: z.string().optional().nullable(),
 })
 
 // Work Order validation schemas
