@@ -211,9 +211,10 @@ function AssetForm({ onAssetCreated, onCancel }: AssetFormProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Name *</label>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name *</label>
               <input
                 type="text"
+                id="name"
                 name="name"
                 required
                 value={formData.name}
@@ -222,9 +223,10 @@ function AssetForm({ onAssetCreated, onCancel }: AssetFormProps) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Asset Tag</label>
+              <label htmlFor="assetTag" className="block text-sm font-medium text-gray-700">Asset Tag</label>
               <input
                 type="text"
+                id="assetTag"
                 name="assetTag"
                 value={formData.assetTag}
                 onChange={handleChange}
@@ -232,8 +234,9 @@ function AssetForm({ onAssetCreated, onCancel }: AssetFormProps) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Category *</label>
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category *</label>
               <select
+                id="category"
                 name="category"
                 required
                 value={formData.category}
@@ -249,9 +252,10 @@ function AssetForm({ onAssetCreated, onCancel }: AssetFormProps) {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Location *</label>
+              <label htmlFor="location" className="block text-sm font-medium text-gray-700">Location *</label>
               <input
                 type="text"
+                id="location"
                 name="location"
                 required
                 value={formData.location}
@@ -260,8 +264,9 @@ function AssetForm({ onAssetCreated, onCancel }: AssetFormProps) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Status</label>
+              <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status</label>
               <select
+                id="status"
                 name="status"
                 value={formData.status}
                 onChange={handleChange}
@@ -274,10 +279,11 @@ function AssetForm({ onAssetCreated, onCancel }: AssetFormProps) {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Purchase Cost</label>
+              <label htmlFor="purchaseCost" className="block text-sm font-medium text-gray-700">Purchase Cost</label>
               <input
                 type="number"
                 step="0.01"
+                id="purchaseCost"
                 name="purchaseCost"
                 value={formData.purchaseCost}
                 onChange={handleChange}
@@ -285,9 +291,10 @@ function AssetForm({ onAssetCreated, onCancel }: AssetFormProps) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Purchase Date</label>
+              <label htmlFor="purchaseDate" className="block text-sm font-medium text-gray-700">Purchase Date</label>
               <input
                 type="date"
+                id="purchaseDate"
                 name="purchaseDate"
                 value={formData.purchaseDate}
                 onChange={handleChange}
@@ -295,9 +302,10 @@ function AssetForm({ onAssetCreated, onCancel }: AssetFormProps) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700">Warranty End</label>
+              <label htmlFor="warrantyEnd" className="block text-sm font-medium text-gray-700">Warranty End</label>
               <input
                 type="date"
+                id="warrantyEnd"
                 name="warrantyEnd"
                 value={formData.warrantyEnd}
                 onChange={handleChange}
@@ -306,8 +314,9 @@ function AssetForm({ onAssetCreated, onCancel }: AssetFormProps) {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Description</label>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
             <textarea
+              id="description"
               name="description"
               rows={3}
               value={formData.description}
