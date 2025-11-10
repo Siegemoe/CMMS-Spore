@@ -26,7 +26,7 @@ export default function Navbar() {
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
                   isActive("/dashboard")
                     ? "bg-blue-700 text-white"
-                    : "text-blue-100 hover:bg-blue-500"
+                    : "text-white hover:bg-blue-500"
                 }`}
               >
                 Dashboard
@@ -36,7 +36,7 @@ export default function Navbar() {
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
                   isActive("/assets")
                     ? "bg-blue-700 text-white"
-                    : "text-blue-100 hover:bg-blue-500"
+                    : "text-white hover:bg-blue-500"
                 }`}
               >
                 Assets
@@ -46,7 +46,7 @@ export default function Navbar() {
                 className={`px-3 py-2 rounded-md text-sm font-medium ${
                   isActive("/work-orders")
                     ? "bg-blue-700 text-white"
-                    : "text-blue-100 hover:bg-blue-500"
+                    : "text-white hover:bg-blue-500"
                 }`}
               >
                 Work Orders

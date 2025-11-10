@@ -233,14 +233,20 @@ function AssetForm({ onAssetCreated, onCancel }: AssetFormProps) {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Category *</label>
-              <input
-                type="text"
+              <select
                 name="category"
                 required
                 value={formData.category}
                 onChange={handleChange}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
+              >
+                <option value="">Select a category</option>
+                <option value="equipment">Equipment</option>
+                <option value="vehicle">Vehicle</option>
+                <option value="building">Building</option>
+                <option value="tool">Tool</option>
+                <option value="other">Other</option>
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">Location *</label>
