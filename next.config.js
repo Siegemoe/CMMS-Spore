@@ -2,12 +2,6 @@
 const { withSentryConfig } = require('@sentry/nextjs')
 
 const nextConfig = {
-  // Performance optimizations
-  experimental: {
-    optimizeCss: true,
-    optimizePackageImports: ['lucide-react'],
-  },
-
   // Image optimization
   images: {
     formats: ['image/webp', 'image/avif'],
