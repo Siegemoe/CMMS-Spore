@@ -13,6 +13,9 @@ export default function Navbar() {
   if (!session) return null
 
   const isActive = (path: string) => pathname === path
+  
+  // Helper function to ensure proper ARIA values
+  const getAriaExpanded = () => isMenuOpen ? "true" : "false"
 
   return (
     <nav className="bg-blue-600 text-white shadow-lg">
@@ -74,9 +77,12 @@ export default function Navbar() {
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-              aria-expanded={isMenuOpen}
+              aria-controls="mobile-menu"
+              aria-label={isMenuOpen ? "Close main menu" : "Open main menu"}
+              type="button"
+              role="button"
+              tabIndex={0}
             >
-              <span className="sr-only">Open main menu</span>
               {/* Hamburger icon */}
               <svg
                 className={`${isMenuOpen ? 'hidden' : 'block'} h-6 w-6`}
@@ -114,7 +120,7 @@ export default function Navbar() {
         </div>
 
         {/* Mobile menu panel */}
-        <div className={`md:hidden transition-all duration-300 ease-in-out ${
+        <div id="mobile-menu" className={`md:hidden transition-all duration-300 ease-in-out ${
           isMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
         }`}>
           <div className="px-2 pt-2 pb-3 space-y-1 border-t border-blue-400">

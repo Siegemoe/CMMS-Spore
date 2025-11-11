@@ -1,11 +1,11 @@
 "use client"
 
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Navbar from "@/components/ui/navbar"
 import RecentActivity from "@/components/activity/RecentActivity"
+import { Loading } from "@/components/shared"
+import { useAuthRedirect } from "@/hooks"
 
 interface DashboardStats {
   totalAssets: number
@@ -15,8 +15,7 @@ interface DashboardStats {
 }
 
 export default function Dashboard() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
+  const { session, isLoading, isAuthenticated } = useAuthRedirect()
   const [stats, setStats] = useState<DashboardStats>({
     totalAssets: 0,
     activeWorkOrders: 0,
@@ -25,35 +24,29 @@ export default function Dashboard() {
   })
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/signin")
-    }
-  }, [status, router])
-
-  useEffect(() => {
-    // Fetch dashboard stats
-    const fetchStats = async () => {
-      try {
-        const response = await fetch("/api/dashboard/stats")
-        if (response.ok) {
-          const data = await response.json()
-          setStats(data)
+    if (isAuthenticated) {
+      // Fetch dashboard stats
+      const fetchStats = async () => {
+        try {
+          const response = await fetch("/api/dashboard/stats")
+          if (response.ok) {
+            const data = await response.json()
+            setStats(data)
+          }
+        } catch (error) {
+          console.error("Failed to fetch stats:", error)
         }
-      } catch (error) {
-        console.error("Failed to fetch stats:", error)
       }
-    }
 
-    if (session) {
       fetchStats()
     }
-  }, [session])
+  }, [isAuthenticated])
 
-  if (status === "loading") {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>
+  if (isLoading) {
+    return <Loading />
   }
 
-  if (!session) {
+  if (!isAuthenticated) {
     return null
   }
 
@@ -65,7 +58,7 @@ export default function Dashboard() {
           <div className="mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
             <p className="mt-2 text-sm sm:text-base text-gray-600">
-              Welcome back, {session.user?.name || session.user?.email}!
+              Welcome back, {session?.user?.name || session?.user?.email}!
             </p>
           </div>
 

@@ -1,10 +1,10 @@
 "use client"
 
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import Navbar from "@/components/ui/navbar"
+import { Loading } from "@/components/shared"
+import { useAuthRedirect, useStatusColors, usePriorityColors, useWorkTypeColors } from "@/hooks"
 
 interface WorkOrder {
   id: string
@@ -49,23 +49,21 @@ interface Asset {
 }
 
 export default function WorkOrders() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
+  const { session, isLoading, isAuthenticated } = useAuthRedirect()
+  const { getStatusColor } = useStatusColors()
+  const { getPriorityColor } = usePriorityColors()
+  const { getWorkTypeColor } = useWorkTypeColors()
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
   const [assets, setAssets] = useState<Asset[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/signin")
+    if (isAuthenticated) {
+      fetchWorkOrders()
+      fetchAssets()
     }
-  }, [status, router])
-
-  useEffect(() => {
-    fetchWorkOrders()
-    fetchAssets()
-  }, [])
+  }, [isAuthenticated])
 
   const fetchWorkOrders = async () => {
     try {
@@ -93,35 +91,7 @@ export default function WorkOrders() {
     }
   }
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "URGENT": return "bg-red-100 text-red-800"
-      case "HIGH": return "bg-orange-100 text-orange-800"
-      case "MEDIUM": return "bg-yellow-100 text-yellow-800"
-      case "LOW": return "bg-green-100 text-green-800"
-      default: return "bg-gray-100 text-gray-800"
-    }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "OPEN": return "bg-blue-100 text-blue-800"
-      case "IN_PROGRESS": return "bg-yellow-100 text-yellow-800"
-      case "COMPLETED": return "bg-green-100 text-green-800"
-      case "CANCELLED": return "bg-red-100 text-red-800"
-      case "ON_HOLD": return "bg-gray-100 text-gray-800"
-      default: return "bg-gray-100 text-gray-800"
-    }
-  }
-
-  const getWorkTypeColor = (workType: string) => {
-    switch (workType) {
-      case "corrective": return "bg-red-100 text-red-800"
-      case "preventive": return "bg-green-100 text-green-800"
-      case "inspection": return "bg-blue-100 text-blue-800"
-      default: return "bg-gray-100 text-gray-800"
-    }
-  }
+  // Color functions moved to shared hooks - using useStatusColors, usePriorityColors, and useWorkTypeColors instead
 
   const handleDeleteWorkOrder = async (id: string) => {
     if (!confirm("Are you sure you want to delete this work order?")) {
@@ -165,11 +135,11 @@ export default function WorkOrders() {
     }
   }
 
-  if (status === "loading" || loading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>
+  if (isLoading || loading) {
+    return <Loading />
   }
 
-  if (!session) {
+  if (!isAuthenticated) {
     return null
   }
 
