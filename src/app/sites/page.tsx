@@ -99,7 +99,9 @@ export default function Sites() {
           {/* Search and Filter */}
           <div className="mb-6 flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
+              <label htmlFor="search" className="sr-only">Search sites</label>
               <input
+                id="search"
                 type="text"
                 placeholder="Search sites..."
                 value={searchTerm}
@@ -107,15 +109,19 @@ export default function Sites() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Statuses</option>
-              <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
-            </select>
+            <div>
+              <label htmlFor="filterStatus" className="sr-only">Filter by status</label>
+              <select
+                id="filterStatus"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">All Statuses</option>
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
+              </select>
+            </div>
           </div>
 
           {showForm && <SiteForm onSiteCreated={fetchSites} onCancel={() => setShowForm(false)} />}
