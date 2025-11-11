@@ -223,4 +223,40 @@ export const activityHelpers = {
       userId,
       userName,
     }),
+
+  assetArchived: async (assetName: string, assetTag: string | null, userId: string, userName: string): Promise<ActivityResult> =>
+    logActivity({
+      action: 'status_changed',
+      entityType: 'asset',
+      entityId: assetName,
+      entityName: assetTag ? `${assetName} (${assetTag})` : assetName,
+      description: `Archived asset ${assetName}`,
+      userId,
+      userName,
+      details: { oldStatus: 'active', newStatus: 'archived' },
+    }),
+
+  assetUnarchived: async (assetName: string, assetTag: string | null, userId: string, userName: string): Promise<ActivityResult> =>
+    logActivity({
+      action: 'status_changed',
+      entityType: 'asset',
+      entityId: assetName,
+      entityName: assetTag ? `${assetName} (${assetTag})` : assetName,
+      description: `Unarchived asset ${assetName}`,
+      userId,
+      userName,
+      details: { oldStatus: 'archived', newStatus: 'active' },
+    }),
+
+  assetStatusUpdated: async (assetName: string, assetTag: string | null, oldStatus: string, newStatus: string, userId: string, userName: string): Promise<ActivityResult> =>
+    logActivity({
+      action: 'status_changed',
+      entityType: 'asset',
+      entityId: assetName,
+      entityName: assetTag ? `${assetName} (${assetTag})` : assetName,
+      description: `Changed status from ${oldStatus} to ${newStatus} for asset ${assetName}`,
+      userId,
+      userName,
+      details: { oldStatus, newStatus },
+    }),
 }

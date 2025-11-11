@@ -228,8 +228,9 @@ export default function EditWorkOrder({ params }: { params: Promise<{ id: string
                   <h3 className="text-md font-medium text-gray-900 mb-4">Basic Information</h3>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Title *</label>
+                      <label htmlFor="title" className="block text-sm font-medium text-gray-700">Title *</label>
                       <input
+                        id="title"
                         type="text"
                         name="title"
                         required
@@ -239,8 +240,9 @@ export default function EditWorkOrder({ params }: { params: Promise<{ id: string
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Asset *</label>
+                      <label htmlFor="assetId" className="block text-sm font-medium text-gray-700">Asset *</label>
                       <select
+                        id="assetId"
                         name="assetId"
                         required
                         value={workOrder.assetId}
@@ -255,8 +257,9 @@ export default function EditWorkOrder({ params }: { params: Promise<{ id: string
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Work Type *</label>
+                      <label htmlFor="workType" className="block text-sm font-medium text-gray-700">Work Type *</label>
                       <select
+                        id="workType"
                         name="workType"
                         required
                         value={workOrder.workType}
@@ -270,8 +273,9 @@ export default function EditWorkOrder({ params }: { params: Promise<{ id: string
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Priority</label>
+                      <label htmlFor="priority" className="block text-sm font-medium text-gray-700">Priority</label>
                       <select
+                        id="priority"
                         name="priority"
                         value={workOrder.priority}
                         onChange={handleChange}
@@ -284,8 +288,9 @@ export default function EditWorkOrder({ params }: { params: Promise<{ id: string
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Status</label>
+                      <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status</label>
                       <select
+                        id="status"
                         name="status"
                         value={workOrder.status}
                         onChange={handleChange}
@@ -299,8 +304,9 @@ export default function EditWorkOrder({ params }: { params: Promise<{ id: string
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Assigned To</label>
+                      <label htmlFor="assignedToId" className="block text-sm font-medium text-gray-700">Assigned To</label>
                       <select
+                        id="assignedToId"
                         name="assignedToId"
                         value={workOrder.assignedTo?.id || ""}
                         onChange={handleChange}
@@ -398,8 +404,9 @@ export default function EditWorkOrder({ params }: { params: Promise<{ id: string
                     </div>
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Estimated Start</label>
+                        <label htmlFor="estimatedStart" className="block text-sm font-medium text-gray-700">Estimated Start</label>
                         <input
+                          id="estimatedStart"
                           type="datetime-local"
                           name="estimatedStart"
                           value={workOrder.estimatedStart ? new Date(workOrder.estimatedStart).toISOString().slice(0, 16) : ""}
@@ -408,8 +415,9 @@ export default function EditWorkOrder({ params }: { params: Promise<{ id: string
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700">Estimated Completion</label>
+                        <label htmlFor="estimatedCompletion" className="block text-sm font-medium text-gray-700">Estimated Completion</label>
                         <input
+                          id="estimatedCompletion"
                           type="datetime-local"
                           name="estimatedCompletion"
                           value={workOrder.estimatedCompletion ? new Date(workOrder.estimatedCompletion).toISOString().slice(0, 16) : ""}

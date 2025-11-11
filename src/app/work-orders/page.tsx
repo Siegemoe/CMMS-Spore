@@ -377,8 +377,9 @@ function EnhancedWorkOrderForm({ onWorkOrderCreated, onCancel, assets }: Enhance
             <h4 className="text-md font-medium text-gray-900 mb-4">Basic Information</h4>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Title *</label>
+                <label htmlFor="title" className="block text-sm font-medium text-gray-700">Title *</label>
                 <input
+                  id="title"
                   type="text"
                   name="title"
                   required
@@ -388,8 +389,9 @@ function EnhancedWorkOrderForm({ onWorkOrderCreated, onCancel, assets }: Enhance
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Asset *</label>
+                <label htmlFor="assetId" className="block text-sm font-medium text-gray-700">Asset *</label>
                 <select
+                  id="assetId"
                   name="assetId"
                   required
                   value={formData.assetId}
@@ -405,8 +407,9 @@ function EnhancedWorkOrderForm({ onWorkOrderCreated, onCancel, assets }: Enhance
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Work Type *</label>
+                <label htmlFor="workType" className="block text-sm font-medium text-gray-700">Work Type *</label>
                 <select
+                  id="workType"
                   name="workType"
                   required
                   value={formData.workType}
@@ -420,8 +423,9 @@ function EnhancedWorkOrderForm({ onWorkOrderCreated, onCancel, assets }: Enhance
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Priority</label>
+                <label htmlFor="priority" className="block text-sm font-medium text-gray-700">Priority</label>
                 <select
+                  id="priority"
                   name="priority"
                   value={formData.priority}
                   onChange={handleChange}
@@ -517,8 +521,9 @@ function EnhancedWorkOrderForm({ onWorkOrderCreated, onCancel, assets }: Enhance
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Estimated Start</label>
+                  <label htmlFor="estimatedStart" className="block text-sm font-medium text-gray-700">Estimated Start</label>
                   <input
+                    id="estimatedStart"
                     type="datetime-local"
                     name="estimatedStart"
                     value={formData.estimatedStart}
@@ -527,8 +532,9 @@ function EnhancedWorkOrderForm({ onWorkOrderCreated, onCancel, assets }: Enhance
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Estimated Completion</label>
+                  <label htmlFor="estimatedCompletion" className="block text-sm font-medium text-gray-700">Estimated Completion</label>
                   <input
+                    id="estimatedCompletion"
                     type="datetime-local"
                     name="estimatedCompletion"
                     value={formData.estimatedCompletion}

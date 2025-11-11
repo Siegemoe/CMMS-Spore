@@ -15,7 +15,7 @@ export const createAssetSchema = z.object({
   assetTag: limitedOptionalString(50),
   category: z.enum(['equipment', 'vehicle', 'building', 'tool', 'other']),
   location: limitedString(255),
-  status: z.enum(['ACTIVE', 'INACTIVE', 'MAINTENANCE', 'RETIRED']).default('ACTIVE'),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'MAINTENANCE', 'RETIRED', 'ARCHIVED']).default('ACTIVE'),
   purchaseDate: z.string().optional().nullable(),
   purchaseCost: z.union([
     z.string().transform(val => {
@@ -26,6 +26,12 @@ export const createAssetSchema = z.object({
     z.number().min(0, 'Purchase cost must be positive').optional().nullable()
   ]).optional().nullable(),
   warrantyEnd: z.string().optional().nullable(),
+})
+
+export const updateAssetSchema = createAssetSchema.partial()
+
+export const updateAssetStatusSchema = z.object({
+  status: z.enum(['ACTIVE', 'INACTIVE', 'MAINTENANCE', 'RETIRED', 'ARCHIVED'])
 })
 
 // Work Order validation schemas
@@ -86,7 +92,7 @@ export const paginationSchema = z.object({
 
 export const assetFilterSchema = z.object({
   category: z.enum(['equipment', 'vehicle', 'building', 'tool', 'other']).optional(),
-  status: z.enum(['ACTIVE', 'INACTIVE', 'MAINTENANCE', 'RETIRED']).optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'MAINTENANCE', 'RETIRED', 'ARCHIVED']).optional(),
   location: z.string().optional(),
   search: z.string().max(100).optional()
 }).merge(paginationSchema)
@@ -118,6 +124,8 @@ export function validateRequest<T>(schema: z.ZodSchema<T>, data: unknown): {
 
 // Export types for TypeScript
 export type CreateAssetInput = z.infer<typeof createAssetSchema>
+export type UpdateAssetInput = z.infer<typeof updateAssetSchema>
+export type UpdateAssetStatusInput = z.infer<typeof updateAssetStatusSchema>
 export type CreateWorkOrderInput = z.infer<typeof createWorkOrderSchema>
 export type UpdateWorkOrderInput = z.infer<typeof updateWorkOrderSchema>
 export type UpdateWorkOrderStatusInput = z.infer<typeof updateWorkOrderStatusSchema>

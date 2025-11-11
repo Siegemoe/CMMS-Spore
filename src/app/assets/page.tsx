@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { useEffect, useState } from "react"
 import Navbar from "@/components/ui/navbar"
 
@@ -26,6 +27,7 @@ export default function Assets() {
   const [assets, setAssets] = useState<Asset[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -42,12 +44,69 @@ export default function Assets() {
       const response = await fetch("/api/assets")
       if (response.ok) {
         const data = await response.json()
-        setAssets(data)
+        // Filter out archived assets from main view
+        const activeAssets = data.filter((asset: Asset) => asset.status !== "ARCHIVED")
+        setAssets(activeAssets)
       }
     } catch (error) {
       console.error("Failed to fetch assets:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleArchive = async (id: string) => {
+    setActionLoading(id)
+    try {
+      const response = await fetch(`/api/assets/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: "ARCHIVED" }),
+      })
+
+      if (response.ok) {
+        await fetchAssets()
+      } else {
+        const data = await response.json()
+        alert(data.error || "Failed to archive asset")
+      }
+    } catch (error) {
+      console.error("Failed to archive asset:", error)
+      alert("Failed to archive asset")
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case "equipment":
+        return "bg-blue-100 text-blue-800"
+      case "vehicle":
+        return "bg-green-100 text-green-800"
+      case "building":
+        return "bg-yellow-100 text-yellow-800"
+      case "tool":
+        return "bg-purple-100 text-purple-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "ACTIVE":
+        return "bg-green-100 text-green-800"
+      case "INACTIVE":
+        return "bg-gray-100 text-gray-800"
+      case "MAINTENANCE":
+        return "bg-yellow-100 text-yellow-800"
+      case "RETIRED":
+        return "bg-red-100 text-red-800"
+      default:
+        return "bg-gray-100 text-gray-800"
     }
   }
 
@@ -69,12 +128,20 @@ export default function Assets() {
               <h1 className="text-3xl font-bold text-gray-900">Assets</h1>
               <p className="mt-2 text-gray-600">Manage your equipment and facilities</p>
             </div>
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Add Asset
-            </button>
+            <div className="flex space-x-3">
+              <Link
+                href="/assets/archived"
+                className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+              >
+                View Archived
+              </Link>
+              <button
+                onClick={() => setShowForm(!showForm)}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              >
+                Add Asset
+              </button>
+            </div>
           </div>
 
           {showForm && <AssetForm onAssetCreated={fetchAssets} onCancel={() => setShowForm(false)} />}
@@ -100,26 +167,40 @@ export default function Assets() {
                                 {asset.assetTag}
                               </span>
                             )}
+                            <span className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getCategoryColor(asset.category)}`}>
+                              {asset.category}
+                            </span>
+                            <span className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(asset.status)}`}>
+                              {asset.status}
+                            </span>
                           </div>
                           <div className="mt-2 sm:flex sm:justify-between">
                             <div className="sm:flex">
                               <p className="flex items-center text-sm text-gray-500">
-                                {asset.category}
+                                Location: {asset.location}
                               </p>
-                              <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                                {asset.location}
-                              </p>
-                            </div>
-                            <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                asset.status === "ACTIVE" ? "bg-green-100 text-green-800" :
-                                asset.status === "MAINTENANCE" ? "bg-yellow-100 text-yellow-800" :
-                                "bg-gray-100 text-gray-800"
-                              }`}>
-                                {asset.status}
-                              </span>
+                              {asset.description && (
+                                <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
+                                  {asset.description}
+                                </p>
+                              )}
                             </div>
                           </div>
+                        </div>
+                        <div className="ml-5 flex-shrink-0 flex items-center space-x-2">
+                          <Link
+                            href={`/assets/${asset.id}/edit`}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm"
+                          >
+                            Edit
+                          </Link>
+                          <button
+                            onClick={() => handleArchive(asset.id)}
+                            disabled={actionLoading === asset.id}
+                            className="bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 text-white font-bold py-2 px-4 rounded text-sm"
+                          >
+                            {actionLoading === asset.id ? "Archiving..." : "Archive"}
+                          </button>
                         </div>
                       </div>
                     </div>
