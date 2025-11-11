@@ -3,5 +3,6 @@ export {
   useStatusColors,
   usePriorityColors,
   useCategoryColors,
-  useWorkTypeColors
+  useWorkTypeColors,
+  useRoomStatusColors
 } from "./useColorMaps"

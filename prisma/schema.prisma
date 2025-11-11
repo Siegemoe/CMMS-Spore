@@ -20,8 +20,94 @@ model User {
   assignedWorkOrders  WorkOrder[]   @relation("AssignedWorkOrders")
   createdWorkOrders   WorkOrder[]   @relation("CreatedWorkOrders")
   requestedWorkOrders WorkOrder[]   @relation("RequestedWorkOrders")
+  managedSites        Site[]        @relation("SiteManager")
+  maintainedBuildings Building[]    @relation("FacilityTechnician")
 
   @@map("users")
+}
+
+model Site {
+  id              String      @id @default(cuid())
+  name            String
+  address         String?
+  description     String?
+  status          String      @default("ACTIVE")
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  siteManagerId   String?
+  siteManager     User?       @relation("SiteManager", fields: [siteManagerId], references: [id])
+  buildings       Building[]
+  assets          Asset[]
+
+  @@index([status])
+  @@index([siteManagerId])
+  @@map("sites")
+}
+
+model Building {
+  id                    String      @id @default(cuid())
+  name                  String
+  number                String
+  description           String?
+  floors                Int?
+  status                String      @default("ACTIVE")
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  siteId                String
+  site                  Site        @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  facilityTechnicianId  String?
+  facilityTechnician    User?       @relation("FacilityTechnician", fields: [facilityTechnicianId], references: [id])
+  rooms                 Room[]
+  assets                Asset[]
+
+  @@index([siteId])
+  @@index([status])
+  @@index([facilityTechnicianId])
+  @@map("buildings")
+}
+
+model Room {
+  id                String      @id @default(cuid())
+  number            String
+  description       String?
+  floor             Int?
+  squareFootage     Float?
+  status            RoomStatus  @default(AVAILABLE)
+  thumbnailImage    String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  buildingId        String
+  building          Building    @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  tenantId          String?
+  tenant            Tenant?     @relation(fields: [tenantId], references: [id])
+  assets            Asset[]
+
+  @@index([buildingId])
+  @@index([status])
+  @@index([tenantId])
+  @@map("rooms")
+}
+
+model Tenant {
+  id            String      @id @default(cuid())
+  names         String      // Can be multiple names separated by commas
+  phoneNumbers  String      // Can be multiple phone numbers separated by commas
+  email         String?
+  status        String      @default("ACTIVE")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  rooms         Room[]
+
+  @@index([status])
+  @@map("tenants")
+}
+
+enum RoomStatus {
+  AVAILABLE
+  OCCUPIED
+  CLEANING
+  MAINTENANCE
+  OUT_OF_SERVICE
 }
 
 model Asset {
@@ -39,12 +125,21 @@ model Asset {
   updatedAt    DateTime    @updatedAt
   createdById  String?
   createdBy    User?       @relation(fields: [createdById], references: [id])
+  siteId       String?
+  buildingId   String?
+  roomId       String?
+  site         Site?       @relation(fields: [siteId], references: [id])
+  building     Building?   @relation(fields: [buildingId], references: [id])
+  room         Room?       @relation(fields: [roomId], references: [id])
   workOrders   WorkOrder[]
 
   @@index([category])
   @@index([location])
   @@index([status])
   @@index([createdById])
+  @@index([siteId])
+  @@index([buildingId])
+  @@index([roomId])
   @@map("assets")
 }
 

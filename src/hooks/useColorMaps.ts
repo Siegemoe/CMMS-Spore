@@ -40,6 +40,22 @@ export const workTypeColorMap = {
   inspection: "bg-blue-100 text-blue-800",
 } as const
 
+export const roomStatusColorMap = {
+  AVAILABLE: "bg-green-100 text-green-800",
+  OCCUPIED: "bg-blue-100 text-blue-800",
+  CLEANING: "bg-yellow-100 text-yellow-800",
+  MAINTENANCE: "bg-orange-100 text-orange-800",
+  OUT_OF_SERVICE: "bg-red-100 text-red-800",
+} as const
+
+export const roomStatusBadgeColorMap = {
+  AVAILABLE: "bg-green-500 hover:bg-green-600",
+  OCCUPIED: "bg-blue-500 hover:bg-blue-600",
+  CLEANING: "bg-yellow-500 hover:bg-yellow-600",
+  MAINTENANCE: "bg-orange-500 hover:bg-orange-600",
+  OUT_OF_SERVICE: "bg-red-500 hover:bg-red-600",
+} as const
+
 /**
  * Hook for getting status colors with TypeScript safety
  */
@@ -82,4 +98,19 @@ export const useWorkTypeColors = () => {
   }
 
   return { getWorkTypeColor }
+}
+
+/**
+ * Hook for getting room status colors
+ */
+export const useRoomStatusColors = () => {
+  const getRoomStatusColor = (status: keyof typeof roomStatusColorMap | string) => {
+    return roomStatusColorMap[status as keyof typeof roomStatusColorMap] || "bg-gray-100 text-gray-800"
+  }
+
+  const getRoomStatusBadgeColor = (status: keyof typeof roomStatusBadgeColorMap | string) => {
+    return roomStatusBadgeColorMap[status as keyof typeof roomStatusBadgeColorMap] || "bg-gray-500 hover:bg-gray-600"
+  }
+
+  return { getRoomStatusColor, getRoomStatusBadgeColor }
 }

@@ -260,3 +260,37 @@ export const activityHelpers = {
       details: { oldStatus, newStatus },
     }),
 }
+
+export class ActivityLogger {
+  static async log(params: {
+    action: 'CREATE' | 'UPDATE' | 'DELETE' | 'ASSIGN' | 'COMPLETE' | 'STATUS_CHANGE'
+    entityType: string
+    entityId: string
+    entityName?: string
+    description: string
+    userId: string
+    userName: string
+    details?: any
+  }): Promise<ActivityResult> {
+    // Map actions to the expected format
+    const actionMap = {
+      'CREATE': 'created' as const,
+      'UPDATE': 'updated' as const,
+      'DELETE': 'deleted' as const,
+      'ASSIGN': 'assigned' as const,
+      'COMPLETE': 'completed' as const,
+      'STATUS_CHANGE': 'status_changed' as const
+    }
+
+    return logActivity({
+      action: actionMap[params.action] || 'created',
+      entityType: params.entityType.toLowerCase() as any,
+      entityId: params.entityId,
+      entityName: params.entityName || '',
+      description: params.description,
+      userId: params.userId,
+      userName: params.userName,
+      details: params.details
+    })
+  }
+}

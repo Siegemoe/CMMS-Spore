@@ -7,6 +7,7 @@ const optionalString = z.string().optional()
 const optionalNumber = z.number().optional()
 const limitedString = (max: number) => z.string().min(1, 'This field is required').max(max, `Must be less than ${max} characters`)
 const limitedOptionalString = (max: number) => z.string().max(max, `Must be less than ${max} characters`).optional()
+const phoneRegex = /^[\d\s\-\+\(\)]+$/
 
 // Asset validation schemas
 export const createAssetSchema = z.object({
@@ -106,6 +107,85 @@ export const workOrderFilterSchema = z.object({
   search: z.string().max(100).optional()
 }).merge(paginationSchema)
 
+// Site validation schemas
+export const createSiteSchema = z.object({
+  name: limitedString(255),
+  address: limitedOptionalString(500),
+  description: limitedOptionalString(1000),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'ARCHIVED']).default('ACTIVE'),
+  siteManagerId: z.string().optional()
+})
+
+export const updateSiteSchema = createSiteSchema.partial()
+
+export const siteFilterSchema = z.object({
+  status: z.enum(['ACTIVE', 'INACTIVE', 'ARCHIVED']).optional(),
+  siteManagerId: z.string().optional(),
+  search: z.string().max(100).optional()
+}).merge(paginationSchema)
+
+// Building validation schemas
+export const createBuildingSchema = z.object({
+  name: limitedString(255),
+  number: limitedString(10),
+  description: limitedOptionalString(1000),
+  floors: z.number().int().min(1).max(200).optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'MAINTENANCE', 'ARCHIVED']).default('ACTIVE'),
+  siteId: z.string().min(1, 'Site ID is required'),
+  facilityTechnicianId: z.string().optional()
+})
+
+export const updateBuildingSchema = createBuildingSchema.partial()
+
+export const buildingFilterSchema = z.object({
+  status: z.enum(['ACTIVE', 'INACTIVE', 'MAINTENANCE', 'ARCHIVED']).optional(),
+  siteId: z.string().optional(),
+  facilityTechnicianId: z.string().optional(),
+  search: z.string().max(100).optional()
+}).merge(paginationSchema)
+
+// Room validation schemas
+export const createRoomSchema = z.object({
+  number: limitedString(20),
+  description: limitedOptionalString(500),
+  floor: z.number().int().min(0).max(200).optional(),
+  squareFootage: z.number().min(0).optional(),
+  status: z.enum(['AVAILABLE', 'OCCUPIED', 'CLEANING', 'MAINTENANCE', 'OUT_OF_SERVICE']).default('AVAILABLE'),
+  buildingId: z.string().min(1, 'Building ID is required'),
+  tenantId: z.string().optional(),
+  thumbnailImage: limitedOptionalString(1000)
+})
+
+export const updateRoomSchema = createRoomSchema.partial()
+
+export const updateRoomStatusSchema = z.object({
+  status: z.enum(['AVAILABLE', 'OCCUPIED', 'CLEANING', 'MAINTENANCE', 'OUT_OF_SERVICE']),
+  tenantId: z.string().optional()
+})
+
+export const roomFilterSchema = z.object({
+  status: z.enum(['AVAILABLE', 'OCCUPIED', 'CLEANING', 'MAINTENANCE', 'OUT_OF_SERVICE']).optional(),
+  buildingId: z.string().optional(),
+  siteId: z.string().optional(),
+  tenantId: z.string().optional(),
+  search: z.string().max(100).optional()
+}).merge(paginationSchema)
+
+// Tenant validation schemas
+export const createTenantSchema = z.object({
+  names: limitedString(500),
+  phoneNumbers: z.string().min(1, 'At least one phone number is required').regex(phoneRegex, 'Invalid phone number format'),
+  email: z.string().email().optional(),
+  status: z.enum(['ACTIVE', 'INACTIVE', 'MOVED_OUT']).default('ACTIVE')
+})
+
+export const updateTenantSchema = createTenantSchema.partial()
+
+export const tenantFilterSchema = z.object({
+  status: z.enum(['ACTIVE', 'INACTIVE', 'MOVED_OUT']).optional(),
+  search: z.string().max(100).optional()
+}).merge(paginationSchema)
+
 // Validation helper functions
 export function validateRequest<T>(schema: z.ZodSchema<T>, data: unknown): {
   success: boolean
@@ -134,3 +214,24 @@ export type LoginUserInput = z.infer<typeof loginUserSchema>
 export type PaginationParams = z.infer<typeof paginationSchema>
 export type AssetFilterParams = z.infer<typeof assetFilterSchema>
 export type WorkOrderFilterParams = z.infer<typeof workOrderFilterSchema>
+
+// Site types
+export type CreateSiteInput = z.infer<typeof createSiteSchema>
+export type UpdateSiteInput = z.infer<typeof updateSiteSchema>
+export type SiteFilterParams = z.infer<typeof siteFilterSchema>
+
+// Building types
+export type CreateBuildingInput = z.infer<typeof createBuildingSchema>
+export type UpdateBuildingInput = z.infer<typeof updateBuildingSchema>
+export type BuildingFilterParams = z.infer<typeof buildingFilterSchema>
+
+// Room types
+export type CreateRoomInput = z.infer<typeof createRoomSchema>
+export type UpdateRoomInput = z.infer<typeof updateRoomSchema>
+export type UpdateRoomStatusInput = z.infer<typeof updateRoomStatusSchema>
+export type RoomFilterParams = z.infer<typeof roomFilterSchema>
+
+// Tenant types
+export type CreateTenantInput = z.infer<typeof createTenantSchema>
+export type UpdateTenantInput = z.infer<typeof updateTenantSchema>
+export type TenantFilterParams = z.infer<typeof tenantFilterSchema>
