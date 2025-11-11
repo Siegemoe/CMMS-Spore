@@ -3,10 +3,12 @@
 import { useSession, signOut } from "next-auth/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useState } from "react"
 
 export default function Navbar() {
   const { data: session } = useSession()
   const pathname = usePathname()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   if (!session) return null
 
@@ -16,53 +18,153 @@ export default function Navbar() {
     <nav className="bg-blue-600 text-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-8">
+          <div className="flex items-center">
             <Link href="/dashboard" className="text-xl font-bold">
               Spore CMMS
             </Link>
-            <div className="flex space-x-4">
-              <Link
-                href="/dashboard"
-                className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  isActive("/dashboard")
-                    ? "bg-blue-700 text-white"
-                    : "text-white hover:bg-blue-500"
-                }`}
+          </div>
+
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Link
+              href="/dashboard"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive("/dashboard")
+                  ? "bg-blue-700 text-white"
+                  : "text-white hover:bg-blue-500"
+              }`}
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/assets"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive("/assets")
+                  ? "bg-blue-700 text-white"
+                  : "text-white hover:bg-blue-500"
+              }`}
+            >
+              Assets
+            </Link>
+            <Link
+              href="/work-orders"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive("/work-orders")
+                  ? "bg-blue-700 text-white"
+                  : "text-white hover:bg-blue-500"
+              }`}
+            >
+              Work Orders
+            </Link>
+            <div className="flex items-center space-x-3 ml-4 border-l border-blue-400 pl-4">
+              <span className="text-sm font-medium truncate max-w-[120px]">
+                {session.user?.name || session.user?.email}
+              </span>
+              <button
+                onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+                className="bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded-md text-sm font-medium transition-colors"
               >
-                Dashboard
-              </Link>
-              <Link
-                href="/assets"
-                className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  isActive("/assets")
-                    ? "bg-blue-700 text-white"
-                    : "text-white hover:bg-blue-500"
-                }`}
-              >
-                Assets
-              </Link>
-              <Link
-                href="/work-orders"
-                className={`px-3 py-2 rounded-md text-sm font-medium ${
-                  isActive("/work-orders")
-                    ? "bg-blue-700 text-white"
-                    : "text-white hover:bg-blue-500"
-                }`}
-              >
-                Work Orders
-              </Link>
+                Sign Out
+              </button>
             </div>
           </div>
-          <div className="flex items-center space-x-4">
-            <span className="text-sm">
-              {session.user?.name || session.user?.email}
-            </span>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden">
             <button
-              onClick={() => signOut({ callbackUrl: "/auth/signin" })}
-              className="bg-blue-700 hover:bg-blue-800 px-3 py-2 rounded-md text-sm font-medium"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+              aria-expanded={isMenuOpen}
             >
-              Sign Out
+              <span className="sr-only">Open main menu</span>
+              {/* Hamburger icon */}
+              <svg
+                className={`${isMenuOpen ? 'hidden' : 'block'} h-6 w-6`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+              {/* Close icon */}
+              <svg
+                className={`${isMenuOpen ? 'block' : 'hidden'} h-6 w-6`}
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
             </button>
+          </div>
+        </div>
+
+        {/* Mobile menu panel */}
+        <div className={`md:hidden transition-all duration-300 ease-in-out ${
+          isMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
+        }`}>
+          <div className="px-2 pt-2 pb-3 space-y-1 border-t border-blue-400">
+            <Link
+              href="/dashboard"
+              className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
+                isActive("/dashboard")
+                  ? "bg-blue-700 text-white"
+                  : "text-white hover:bg-blue-500"
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Dashboard
+            </Link>
+            <Link
+              href="/assets"
+              className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
+                isActive("/assets")
+                  ? "bg-blue-700 text-white"
+                  : "text-white hover:bg-blue-500"
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Assets
+            </Link>
+            <Link
+              href="/work-orders"
+              className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
+                isActive("/work-orders")
+                  ? "bg-blue-700 text-white"
+                  : "text-white hover:bg-blue-500"
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Work Orders
+            </Link>
+            <div className="border-t border-blue-400 pt-3 mt-3">
+              <div className="px-3 py-2 text-sm text-blue-100 truncate">
+                {session.user?.name || session.user?.email}
+              </div>
+              <button
+                onClick={() => {
+                  signOut({ callbackUrl: "/auth/signin" })
+                  setIsMenuOpen(false)
+                }}
+                className="w-full text-left px-3 py-3 bg-blue-700 hover:bg-blue-800 rounded-md text-base font-medium transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
       </div>

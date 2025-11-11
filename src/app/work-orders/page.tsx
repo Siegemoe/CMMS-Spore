@@ -176,19 +176,21 @@ export default function WorkOrders() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="mb-8 flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Work Orders</h1>
-              <p className="mt-2 text-gray-600">Manage maintenance tasks and repairs</p>
+      <div className="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
+        <div className="px-0 py-4 sm:py-6 sm:px-0">
+          <div className="mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Work Orders</h1>
+                <p className="mt-2 text-sm sm:text-base text-gray-600">Manage maintenance tasks and repairs</p>
+              </div>
+              <button
+                onClick={() => setShowForm(!showForm)}
+                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 sm:py-2 px-4 rounded text-base sm:text-base touch-manipulation transition-colors"
+              >
+                Create Work Order
+              </button>
             </div>
-            <button
-              onClick={() => setShowForm(!showForm)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-            >
-              Create Work Order
-            </button>
           </div>
 
           {showForm && <EnhancedWorkOrderForm onWorkOrderCreated={() => { fetchWorkOrders(); setShowForm(false); }} assets={assets} onCancel={() => setShowForm(false)} />}
@@ -196,82 +198,155 @@ export default function WorkOrders() {
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
             <ul className="divide-y divide-gray-200">
               {workOrders.length === 0 ? (
-                <li className="px-6 py-4 text-center text-gray-500">
+                <li className="px-4 sm:px-6 py-8 text-center text-gray-500">
                   No work orders found. Create your first work order to get started.
                 </li>
               ) : (
                 workOrders.map((workOrder) => (
-                  <li key={workOrder.id} className="hover:bg-gray-50">
-                    <div className="px-6 py-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <div className="flex items-center space-x-3">
-                                <span className="text-lg font-bold text-gray-900">
+                  <li key={workOrder.id} className="hover:bg-gray-50 transition-colors">
+                    <div className="px-4 sm:px-6 py-4">
+                      {/* Mobile Card Layout */}
+                      <div className="sm:hidden">
+                        <div className="flex flex-col space-y-3">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 pr-2">
+                              <div className="flex items-center space-x-2 mb-1">
+                                <span className="text-base font-bold text-gray-900">
                                   #{workOrder.workOrderNumber}
                                 </span>
-                                <Link
-                                  href={`/work-orders/${workOrder.id}`}
-                                  className="text-sm font-medium text-blue-600 hover:text-blue-800 truncate"
-                                >
-                                  {workOrder.title}
-                                </Link>
                               </div>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getWorkTypeColor(workOrder.workType)}`}>
-                                {workOrder.workType}
-                              </span>
-                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getPriorityColor(workOrder.priority)}`}>
-                                {workOrder.priority}
-                              </span>
-                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(workOrder.status)}`}>
-                                {workOrder.status}
-                              </span>
+                              <Link
+                                href={`/work-orders/${workOrder.id}`}
+                                className="text-base font-medium text-blue-600 hover:text-blue-800 line-clamp-2"
+                              >
+                                {workOrder.title}
+                              </Link>
                             </div>
                           </div>
-                          <p className="mt-1 text-sm text-gray-600">
-                            Asset: {workOrder.asset.name} {workOrder.asset.assetTag && `(${workOrder.asset.assetTag})`}
-                          </p>
-                          {workOrder.description && (
-                            <p className="mt-1 text-sm text-gray-500">
-                              {workOrder.description}
-                            </p>
-                          )}
-                          <div className="mt-2 flex items-center text-xs text-gray-500">
-                            <span>Created by {workOrder.createdBy.name || workOrder.createdBy.email}</span>
-                            <span className="mx-2">•</span>
-                            <span>{new Date(workOrder.createdAt).toLocaleDateString()}</span>
-                            {workOrder.assignedTo && (
-                              <>
-                                <span className="mx-2">•</span>
-                                <span>Assigned to {workOrder.assignedTo.name || workOrder.assignedTo.email}</span>
-                              </>
+
+                          <div className="flex flex-wrap gap-1">
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getWorkTypeColor(workOrder.workType)}`}>
+                              {workOrder.workType}
+                            </span>
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(workOrder.priority)}`}>
+                              {workOrder.priority}
+                            </span>
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(workOrder.status)}`}>
+                              {workOrder.status}
+                            </span>
+                          </div>
+
+                          <div className="text-sm text-gray-600 space-y-1">
+                            <p>🔧 {workOrder.asset.name} {workOrder.asset.assetTag && `(${workOrder.asset.assetTag})`}</p>
+                            {workOrder.description && (
+                              <p className="text-xs text-gray-500 line-clamp-2">{workOrder.description}</p>
                             )}
+                          </div>
+
+                          <div className="text-xs text-gray-500 space-y-1">
+                            <p>👤 Created: {workOrder.createdBy.name || workOrder.createdBy.email}</p>
+                            <p>📅 {new Date(workOrder.createdAt).toLocaleDateString()}</p>
+                            {workOrder.assignedTo && (
+                              <p>👷 Assigned: {workOrder.assignedTo.name || workOrder.assignedTo.email}</p>
+                            )}
+                          </div>
+
+                          <div className="flex space-x-2 pt-2 border-t border-gray-100">
+                            <Link
+                              href={`/work-orders/${workOrder.id}/edit`}
+                              className="flex-1 inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 touch-manipulation transition-colors"
+                            >
+                              Edit
+                            </Link>
+                            <button
+                              onClick={() => handleArchiveWorkOrder(workOrder.id)}
+                              disabled={workOrder.status === "ARCHIVED"}
+                              className="flex-1 inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation transition-colors"
+                            >
+                              Archive
+                            </button>
+                            <button
+                              onClick={() => handleDeleteWorkOrder(workOrder.id)}
+                              className="flex-1 inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 touch-manipulation transition-colors"
+                            >
+                              Delete
+                            </button>
                           </div>
                         </div>
                       </div>
-                      <div className="mt-3 flex justify-end space-x-2">
-                        <Link
-                          href={`/work-orders/${workOrder.id}/edit`}
-                          className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                        >
-                          Edit
-                        </Link>
-                        <button
-                          onClick={() => handleArchiveWorkOrder(workOrder.id)}
-                          disabled={workOrder.status === "ARCHIVED"}
-                          className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          Archive
-                        </button>
-                        <button
-                          onClick={() => handleDeleteWorkOrder(workOrder.id)}
-                          className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                        >
-                          Delete
-                        </button>
+
+                      {/* Desktop Row Layout */}
+                      <div className="hidden sm:block">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="flex items-center space-x-3">
+                                  <span className="text-lg font-bold text-gray-900">
+                                    #{workOrder.workOrderNumber}
+                                  </span>
+                                  <Link
+                                    href={`/work-orders/${workOrder.id}`}
+                                    className="text-sm font-medium text-blue-600 hover:text-blue-800 truncate"
+                                  >
+                                    {workOrder.title}
+                                  </Link>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getWorkTypeColor(workOrder.workType)}`}>
+                                  {workOrder.workType}
+                                </span>
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getPriorityColor(workOrder.priority)}`}>
+                                  {workOrder.priority}
+                                </span>
+                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(workOrder.status)}`}>
+                                  {workOrder.status}
+                                </span>
+                              </div>
+                            </div>
+                            <p className="mt-1 text-sm text-gray-600">
+                              Asset: {workOrder.asset.name} {workOrder.asset.assetTag && `(${workOrder.asset.assetTag})`}
+                            </p>
+                            {workOrder.description && (
+                              <p className="mt-1 text-sm text-gray-500">
+                                {workOrder.description}
+                              </p>
+                            )}
+                            <div className="mt-2 flex items-center text-xs text-gray-500">
+                              <span>Created by {workOrder.createdBy.name || workOrder.createdBy.email}</span>
+                              <span className="mx-2">•</span>
+                              <span>{new Date(workOrder.createdAt).toLocaleDateString()}</span>
+                              {workOrder.assignedTo && (
+                                <>
+                                  <span className="mx-2">•</span>
+                                  <span>Assigned to {workOrder.assignedTo.name || workOrder.assignedTo.email}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex justify-end space-x-2">
+                          <Link
+                            href={`/work-orders/${workOrder.id}/edit`}
+                            className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-manipulation transition-colors"
+                          >
+                            Edit
+                          </Link>
+                          <button
+                            onClick={() => handleArchiveWorkOrder(workOrder.id)}
+                            disabled={workOrder.status === "ARCHIVED"}
+                            className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation transition-colors"
+                          >
+                            Archive
+                          </button>
+                          <button
+                            onClick={() => handleDeleteWorkOrder(workOrder.id)}
+                            className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 touch-manipulation transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </li>
