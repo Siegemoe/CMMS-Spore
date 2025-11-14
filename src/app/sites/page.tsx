@@ -307,7 +307,7 @@ export default function Sites() {
 
 // Site Form Component
 interface SiteFormProps {
-  onSiteCreated: () => void
+  onSiteCreated: (newSite: any) => void
   onCancel: () => void
 }
 
@@ -321,7 +321,15 @@ function SiteForm({ onSiteCreated, onCancel }: SiteFormProps) {
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [users, setUsers] = useState<Array<{ id: string; name: string | null; email: string }>>([])
+  const [users, setUsers] = useState<Array<{ id: string; name: string | null; email: string; role: string }>>([])
+
+  const [includeBuildings, setIncludeBuildings] = useState(false)
+  const [bulkData, setBulkData] = useState({
+    buildings: "",
+    floors: "",
+    roomsPerFloor: "",
+  })
+  const [bulkCreating, setBulkCreating] = useState(false)
 
   useEffect(() => {
     fetchUsers()
@@ -329,13 +337,11 @@ function SiteForm({ onSiteCreated, onCancel }: SiteFormProps) {
 
   const fetchUsers = async () => {
     try {
-      // For now, use a simple approach - we can implement users API later
-      const users = [
-        { id: "1", name: "Admin User", email: "admin@example.com" },
-        { id: "2", name: "Site Manager", email: "manager@example.com" },
-        { id: "3", name: "Maintenance Lead", email: "maintenance@example.com" }
-      ]
-      setUsers(users)
+      const response = await fetch('/api/users/dropdown')
+      if (response.ok) {
+        const data = await response.json()
+        setUsers(data.data || [])
+      }
     } catch (error) {
       console.error("Failed to fetch users:", error)
     }
@@ -356,14 +362,15 @@ function SiteForm({ onSiteCreated, onCancel }: SiteFormProps) {
       })
 
       if (response.ok) {
-        onSiteCreated()
-        setFormData({
-          name: "",
-          address: "",
-          description: "",
-          status: "ACTIVE",
-          siteManagerId: "",
-        })
+        const newSite = await response.json()
+
+        // If bulk creation is enabled, create buildings and rooms
+        if (includeBuildings) {
+          await createBulkRooms(newSite.id)
+        }
+
+        onSiteCreated(newSite)
+        resetForm()
       } else {
         const data = await response.json()
         setError(data.error || "Failed to create site")
@@ -373,6 +380,61 @@ function SiteForm({ onSiteCreated, onCancel }: SiteFormProps) {
     } finally {
       setLoading(false)
     }
+  }
+
+  const createBulkRooms = async (siteId: string) => {
+    setBulkCreating(true)
+    try {
+      // Parse the buildings and floors from input strings
+      const buildings = bulkData.buildings.split(',').map(b => b.trim()).filter(b => b)
+      const floors = bulkData.floors.split(',').map(f => parseInt(f.trim())).filter(f => !isNaN(f))
+      const roomsPerFloor = parseInt(bulkData.roomsPerFloor)
+
+      if (buildings.length === 0 || floors.length === 0 || isNaN(roomsPerFloor) || roomsPerFloor < 1) {
+        throw new Error('Invalid bulk creation data')
+      }
+
+      const response = await fetch('/api/sites/bulk-create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          siteId,
+          buildings,
+          floors,
+          roomsPerFloor,
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Failed to create buildings and rooms')
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('Bulk creation error:', error)
+      throw error
+    } finally {
+      setBulkCreating(false)
+    }
+  }
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      address: "",
+      description: "",
+      status: "ACTIVE",
+      siteManagerId: "",
+    })
+    setBulkData({
+      buildings: "",
+      floors: "",
+      roomsPerFloor: "",
+    })
+    setIncludeBuildings(false)
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -455,6 +517,98 @@ function SiteForm({ onSiteCreated, onCancel }: SiteFormProps) {
               </select>
             </div>
           </div>
+
+          {/* Bulk Room Builder Section */}
+          <div className="border-t border-gray-200 pt-6">
+            <div className="mb-4">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={includeBuildings}
+                  onChange={(e) => setIncludeBuildings(e.target.checked)}
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                />
+                <span className="ml-2 text-sm font-medium text-gray-900">
+                  Include Buildings and Rooms (Bulk Creation)
+                </span>
+              </label>
+              <p className="mt-1 text-xs text-gray-500">
+                Automatically create buildings and rooms for this site
+              </p>
+            </div>
+
+            {includeBuildings && (
+              <div className="space-y-4 bg-gray-50 p-4 rounded-md">
+                <h4 className="text-sm font-medium text-gray-900 mb-3">Bulk Room Builder</h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label htmlFor="buildings" className="block text-sm font-medium text-gray-700 mb-1">
+                      Buildings
+                    </label>
+                    <input
+                      type="text"
+                      id="buildings"
+                      value={bulkData.buildings}
+                      onChange={(e) => setBulkData({ ...bulkData, buildings: e.target.value })}
+                      placeholder="A, B, C, D, E"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      disabled={bulkCreating}
+                    />
+                    <p className="mt-1 text-xs text-gray-500">Comma-separated building letters/numbers</p>
+                  </div>
+
+                  <div>
+                    <label htmlFor="floors" className="block text-sm font-medium text-gray-700 mb-1">
+                      Floors
+                    </label>
+                    <input
+                      type="text"
+                      id="floors"
+                      value={bulkData.floors}
+                      onChange={(e) => setBulkData({ ...bulkData, floors: e.target.value })}
+                      placeholder="1, 2, 3"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      disabled={bulkCreating}
+                    />
+                    <p className="mt-1 text-xs text-gray-500">Comma-separated floor numbers</p>
+                  </div>
+
+                  <div>
+                    <label htmlFor="roomsPerFloor" className="block text-sm font-medium text-gray-700 mb-1">
+                      Rooms per Floor
+                    </label>
+                    <input
+                      type="number"
+                      id="roomsPerFloor"
+                      value={bulkData.roomsPerFloor}
+                      onChange={(e) => setBulkData({ ...bulkData, roomsPerFloor: e.target.value })}
+                      placeholder="4"
+                      min="1"
+                      max="50"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      disabled={bulkCreating}
+                    />
+                    <p className="mt-1 text-xs text-gray-500">Number of rooms on each floor</p>
+                  </div>
+                </div>
+
+                {bulkData.buildings && bulkData.floors && bulkData.roomsPerFloor && (
+                  <div className="mt-4 p-3 bg-blue-50 rounded-md">
+                    <p className="text-sm text-blue-900">
+                      <strong>Preview:</strong> This will create{' '}
+                      {bulkData.buildings.split(',').filter(b => b.trim()).length} buildings with{' '}
+                      {bulkData.floors.split(',').filter(f => f.trim()).length} floors each,{' '}
+                      totaling {bulkData.buildings.split(',').filter(b => b.trim()).length *
+                               bulkData.floors.split(',').filter(f => f.trim()).length *
+                               (parseInt(bulkData.roomsPerFloor) || 0)} rooms
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="flex flex-col sm:flex-row sm:justify-end gap-3">
             <button
               type="button"
@@ -465,10 +619,12 @@ function SiteForm({ onSiteCreated, onCancel }: SiteFormProps) {
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || bulkCreating}
               className="w-full sm:w-auto bg-blue-600 py-3 sm:py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 touch-manipulation transition-colors"
             >
-              {loading ? "Creating..." : "Create Site"}
+              {loading ? "Creating Site..." :
+               bulkCreating ? "Creating Buildings & Rooms..." :
+               includeBuildings ? "Create Site & Buildings" : "Create Site"}
             </button>
           </div>
         </form>
