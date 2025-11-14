@@ -6,6 +6,29 @@ import Navbar from "@/components/ui/navbar"
 import { Loading } from "@/components/shared"
 import { useAuthRedirect, useStatusColors } from "@/hooks"
 
+interface Room {
+  id: string
+  number: string
+  description: string | null
+  floor: number | null
+  status: string
+  buildingId: string
+  tenantId: string | null
+  building: {
+    id: string
+    name: string
+    number: string
+  }
+  tenant: {
+    id: string
+    names: string
+    status: string
+  } | null
+  _count: {
+    assets: number
+  }
+}
+
 interface Site {
   id: string
   name: string
@@ -20,6 +43,12 @@ interface Site {
     name: string | null
     email: string
   } | null
+  buildings: Array<{
+    id: string
+    name: string
+    number: string
+    rooms: Room[]
+  }>
   _count: {
     buildings: number
     assets: number
@@ -68,6 +97,21 @@ export default function Sites() {
     }
   }
 
+  const getRoomStatusColor = (status: string) => {
+    switch (status) {
+      case "AVAILABLE": return "bg-green-100 text-green-800 hover:bg-green-200"
+      case "OCCUPIED": return "bg-blue-100 text-blue-800 hover:bg-blue-200"
+      case "CLEANING": return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
+      case "MAINTENANCE": return "bg-orange-100 text-orange-800 hover:bg-orange-200"
+      case "OUT_OF_SERVICE": return "bg-red-100 text-red-800 hover:bg-red-200"
+      default: return "bg-gray-100 text-gray-800 hover:bg-gray-200"
+    }
+  }
+
+  const getAllRoomsForSite = (site: Site): Room[] => {
+    return site.buildings.flatMap(building => building.rooms)
+  }
+
   if (isLoading || loading) {
     return <Loading />
   }
@@ -84,8 +128,8 @@ export default function Sites() {
           <div className="mb-6 sm:mb-8">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Sites</h1>
-                <p className="mt-2 text-sm sm:text-base text-gray-600">Manage your facilities and locations</p>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Sites & Rooms</h1>
+                <p className="mt-2 text-sm sm:text-base text-gray-600">Manage your facilities and room occupancy</p>
               </div>
               <button
                 onClick={() => setShowForm(!showForm)}
@@ -126,10 +170,10 @@ export default function Sites() {
 
           {showForm && <SiteForm onSiteCreated={fetchSites} onCancel={() => setShowForm(false)} />}
 
-          {/* Sites Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Sites & Rooms Grid */}
+          <div className="space-y-6">
             {sites.length === 0 ? (
-              <div className="col-span-full text-center py-12">
+              <div className="text-center py-12">
                 <div className="text-gray-500">
                   <div className="text-6xl mb-4">🏢</div>
                   <h3 className="text-lg font-medium mb-2">No sites found</h3>
@@ -137,63 +181,122 @@ export default function Sites() {
                 </div>
               </div>
             ) : (
-              sites.map((site) => (
-                <div key={site.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">{site.name}</h3>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(site.status)}`}>
-                          {getStatusText(site.status)}
-                        </span>
+              sites.map((site) => {
+                const allRooms = getAllRoomsForSite(site)
+                return (
+                  <div key={site.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                    <div className="p-6">
+                      {/* Site Header */}
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-1">{site.name}</h3>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(site.status)}`}>
+                            {getStatusText(site.status)}
+                          </span>
+                        </div>
                       </div>
-                    </div>
 
-                    {site.address && (
-                      <p className="text-sm text-gray-600 mb-3">
-                        📍 {site.address}
-                      </p>
-                    )}
+                      {site.address && (
+                        <p className="text-sm text-gray-600 mb-3">
+                          📍 {site.address}
+                        </p>
+                      )}
 
-                    {site.description && (
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">{site.description}</p>
-                    )}
+                      {site.description && (
+                        <p className="text-sm text-gray-600 mb-4 line-clamp-2">{site.description}</p>
+                      )}
 
-                    <div className="space-y-2 mb-4">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-500">Buildings:</span>
-                        <span className="font-medium">{site._count.buildings}</span>
+                      {/* Site Statistics */}
+                      <div className="flex flex-wrap gap-4 mb-4 text-sm">
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-500">Buildings:</span>
+                          <span className="font-medium">{site._count.buildings}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-500">Total Rooms:</span>
+                          <span className="font-medium">{allRooms.length}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-gray-500">Assets:</span>
+                          <span className="font-medium">{site._count.assets}</span>
+                        </div>
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-500">Assets:</span>
-                        <span className="font-medium">{site._count.assets}</span>
-                      </div>
-                    </div>
 
-                    {site.siteManager && (
-                      <div className="mb-4 p-3 bg-gray-50 rounded-md">
-                        <p className="text-xs text-gray-500 mb-1">Site Manager</p>
-                        <p className="text-sm font-medium text-gray-900">{site.siteManager.name || site.siteManager.email}</p>
-                      </div>
-                    )}
+                      {/* Room Badges */}
+                      {allRooms.length > 0 ? (
+                        <div className="mb-4">
+                          <h4 className="text-sm font-medium text-gray-700 mb-3">Room Status Overview</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {allRooms.map((room) => (
+                              <Link
+                                key={room.id}
+                                href={`/rooms/${room.id}`}
+                                className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium transition-colors touch-manipulation ${getRoomStatusColor(room.status)}`}
+                                title={`${room.building.number}-${room.number} (${room.status.toLowerCase()})${room.tenant ? ` - ${room.tenant.names}` : ''}`}
+                              >
+                                {room.building.number}-{room.number}
+                                {room._count.assets > 0 && (
+                                  <span className="ml-1 opacity-75">•{room._count.assets}</span>
+                                )}
+                              </Link>
+                            ))}
+                          </div>
+                          <div className="flex flex-wrap gap-4 mt-3 text-xs text-gray-500">
+                            <div className="flex items-center gap-1">
+                              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                              <span>Available</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                              <span>Occupied</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                              <span>Cleaning</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                              <span>Maintenance</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                              <span>Out of Service</span>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-4 text-gray-500 text-sm">
+                          No rooms configured for this site
+                        </div>
+                      )}
 
-                    <div className="flex gap-2">
-                      <Link
-                        href={`/sites/${site.id}`}
-                        className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors touch-manipulation"
-                      >
-                        View Details
-                      </Link>
-                      <Link
-                        href={`/sites/${site.id}/edit`}
-                        className="flex-1 text-center bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors touch-manipulation"
-                      >
-                        Edit
-                      </Link>
+                      {/* Site Manager */}
+                      {site.siteManager && (
+                        <div className="mb-4 p-3 bg-gray-50 rounded-md">
+                          <p className="text-xs text-gray-500 mb-1">Site Manager</p>
+                          <p className="text-sm font-medium text-gray-900">{site.siteManager.name || site.siteManager.email}</p>
+                        </div>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="flex gap-2">
+                        <Link
+                          href={`/sites/${site.id}`}
+                          className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors touch-manipulation"
+                        >
+                          View Details
+                        </Link>
+                        <Link
+                          href={`/sites/${site.id}/edit`}
+                          className="flex-1 text-center bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors touch-manipulation"
+                        >
+                          Edit Site
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                )
+              })
             )}
           </div>
         </div>

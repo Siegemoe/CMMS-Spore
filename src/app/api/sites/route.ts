@@ -42,6 +42,28 @@ export async function GET(request: NextRequest) {
               email: true,
             }
           },
+          buildings: {
+            include: {
+              rooms: {
+                include: {
+                  tenant: {
+                    select: {
+                      id: true,
+                      names: true,
+                      status: true,
+                    }
+                  },
+                  _count: {
+                    select: {
+                      assets: true
+                    }
+                  }
+                },
+                orderBy: { number: 'asc' }
+              }
+            },
+            orderBy: { number: 'asc' }
+          },
           _count: {
             select: {
               buildings: true,

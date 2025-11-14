@@ -50,16 +50,6 @@ export default function Navbar() {
               Sites
             </Link>
             <Link
-              href="/buildings"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive("/buildings")
-                  ? "bg-blue-700 text-white"
-                  : "text-white hover:bg-blue-500"
-              }`}
-            >
-              Buildings
-            </Link>
-            <Link
               href="/assets"
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive("/assets")
@@ -165,17 +155,6 @@ export default function Navbar() {
               onClick={() => setIsMenuOpen(false)}
             >
               Sites
-            </Link>
-            <Link
-              href="/buildings"
-              className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
-                isActive("/buildings")
-                  ? "bg-blue-700 text-white"
-                  : "text-white hover:bg-blue-500"
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Buildings
             </Link>
             <Link
               href="/assets"
