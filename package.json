@@ -18,7 +18,9 @@
     "test:e2e": "npx tsx e2e-tests.ts",
     "test:saved": "npx tsx e2e-tests.ts > test-results/SAVED!!! 2>&1 || echo 'Tests completed - see log files'",
     "test:all": "npm run test:unit && npm run test:integration && npm run test:security",
-    "prisma:generate": "npx prisma generate"
+    "prisma:generate": "npx prisma generate",
+    "db:seed": "npx tsx prisma/seed.ts",
+    "db:reset": "npx prisma db push --force-reset && npm run db:seed"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",
