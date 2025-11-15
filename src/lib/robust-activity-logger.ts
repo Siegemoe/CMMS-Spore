@@ -263,7 +263,7 @@ export const activityHelpers = {
 
 export class ActivityLogger {
   static async log(params: {
-    action: 'CREATE' | 'UPDATE' | 'DELETE' | 'ASSIGN' | 'COMPLETE' | 'STATUS_CHANGE'
+    action: 'CREATE' | 'UPDATE' | 'DELETE' | 'ASSIGN' | 'COMPLETE' | 'STATUS_CHANGE' | 'BULK_CREATE'
     entityType: string
     entityId: string
     entityName?: string
@@ -279,7 +279,8 @@ export class ActivityLogger {
       'DELETE': 'deleted' as const,
       'ASSIGN': 'assigned' as const,
       'COMPLETE': 'completed' as const,
-      'STATUS_CHANGE': 'status_changed' as const
+      'STATUS_CHANGE': 'status_changed' as const,
+      'BULK_CREATE': 'created' as const
     }
 
     return logActivity({
