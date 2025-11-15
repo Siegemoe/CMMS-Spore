@@ -72,6 +72,13 @@ export async function GET(request: NextRequest) {
             include: {
               rooms: {
                 include: {
+                  building: {
+                    select: {
+                      id: true,
+                      name: true,
+                      number: true,
+                    }
+                  },
                   tenant: {
                     select: {
                       id: true,
