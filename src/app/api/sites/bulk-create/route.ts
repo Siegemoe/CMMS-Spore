@@ -107,8 +107,8 @@ export async function POST(request: NextRequest) {
       entityId: siteId,
       entityName: site.name,
       description: `Bulk created ${result.createdBuildings.length} buildings and ${result.createdRooms.length} rooms for site: ${site.name}`,
-      userId: session.user.id,
-      userName: session.user.name || session.user.email || "Unknown",
+      userId: (session.user as any)?.id || session.user?.email || "unknown",
+      userName: (session.user as any)?.name || session.user?.email || "Unknown",
       details: {
         siteId,
         siteName: site.name,

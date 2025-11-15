@@ -133,8 +133,8 @@ export async function POST(request: NextRequest) {
       entityId: site.id,
       entityName: site.name,
       description: `Created new site: ${site.name}`,
-      userId: session.user.id,
-      userName: session.user.name || session.user.email || "Unknown",
+      userId: (session.user as any)?.id || session.user?.email || "unknown",
+      userName: (session.user as any)?.name || session.user?.email || "Unknown",
       details: { siteId: site.id, siteName: site.name }
     })
 
