@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Navbar from "@/components/ui/navbar"
-import { Loading } from "@/components/shared"
+import { Loading, Card, CardHeader, CardContent, CardFooter, Button } from "@/components/shared"
 import { useAuthRedirect, useStatusColors } from "@/hooks"
 
 interface Room {
@@ -121,7 +121,7 @@ export default function Sites() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen gradient-bg-subtle">
       <Navbar />
       <div className="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
         <div className="px-0 py-4 sm:py-6 sm:px-0">
@@ -131,12 +131,14 @@ export default function Sites() {
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Sites & Rooms</h1>
                 <p className="mt-2 text-sm sm:text-base text-gray-600">Manage your facilities and room occupancy</p>
               </div>
-              <button
+              <Button
                 onClick={() => setShowForm(!showForm)}
-                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 sm:py-2 px-4 rounded text-base sm:text-base touch-manipulation transition-colors"
+                variant="primary"
+                size="md"
+                className="w-full sm:w-auto"
               >
                 Add Site
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -150,7 +152,7 @@ export default function Sites() {
                 placeholder="Search sites..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-modern"
               />
             </div>
             <div>
@@ -159,7 +161,7 @@ export default function Sites() {
                 id="filterStatus"
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="w-full sm:w-auto px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-modern"
               >
                 <option value="">All Statuses</option>
                 <option value="ACTIVE">Active</option>
@@ -173,31 +175,31 @@ export default function Sites() {
           {/* Sites & Rooms Grid */}
           <div className="space-y-6">
             {sites.length === 0 ? (
-              <div className="text-center py-12">
+              <Card variant="elevated" className="text-center py-12">
                 <div className="text-gray-500">
                   <div className="text-6xl mb-4">🏢</div>
                   <h3 className="text-lg font-medium mb-2">No sites found</h3>
                   <p>Create your first site to get started with facilities management.</p>
                 </div>
-              </div>
+              </Card>
             ) : (
               sites.map((site) => {
                 const allRooms = getAllRoomsForSite(site)
                 return (
-                  <div key={site.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                    <div className="p-6">
+                  <Card key={site.id} variant="elevated" hover={true}>
+                    <CardContent>
                       {/* Site Header */}
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-1">{site.name}</h3>
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(site.status)}`}>
+                          <h3 className="text-xl font-bold text-gray-900 mb-2">{site.name}</h3>
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(site.status)}`}>
                             {getStatusText(site.status)}
                           </span>
                         </div>
                       </div>
 
                       {site.address && (
-                        <p className="text-sm text-gray-600 mb-3">
+                        <p className="text-sm text-gray-600 mb-3 flex items-center">
                           📍 {site.address}
                         </p>
                       )}
@@ -207,94 +209,110 @@ export default function Sites() {
                       )}
 
                       {/* Site Statistics */}
-                      <div className="flex flex-wrap gap-4 mb-4 text-sm">
-                        <div className="flex items-center gap-1">
-                          <span className="text-gray-500">Buildings:</span>
-                          <span className="font-medium">{site._count.buildings}</span>
+                      <div className="flex flex-wrap gap-6 mb-6 text-sm">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <span className="text-blue-600 font-semibold text-xs">🏢</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500 block">Buildings</span>
+                            <span className="font-bold text-gray-900">{site._count.buildings}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-gray-500">Total Rooms:</span>
-                          <span className="font-medium">{allRooms.length}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                            <span className="text-green-600 font-semibold text-xs">🚪</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500 block">Rooms</span>
+                            <span className="font-bold text-gray-900">{allRooms.length}</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-gray-500">Assets:</span>
-                          <span className="font-medium">{site._count.assets}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <span className="text-purple-600 font-semibold text-xs">📦</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500 block">Assets</span>
+                            <span className="font-bold text-gray-900">{site._count.assets}</span>
+                          </div>
                         </div>
                       </div>
 
                       {/* Room Badges */}
                       {allRooms.length > 0 ? (
-                        <div className="mb-4">
-                          <h4 className="text-sm font-medium text-gray-700 mb-3">Room Status Overview</h4>
-                          <div className="flex flex-wrap gap-2">
+                        <div className="mb-6">
+                          <h4 className="text-sm font-semibold text-gray-700 mb-3">Room Status Overview</h4>
+                          <div className="flex flex-wrap gap-2 mb-4">
                             {allRooms.map((room) => (
                               <Link
                                 key={room.id}
                                 href={`/rooms/${room.id}`}
-                                className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium transition-colors touch-manipulation ${getRoomStatusColor(room.status)}`}
+                                className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-medium transition-modern touch-manipulation ${getRoomStatusColor(room.status)}`}
                                 title={`${room.building.number}-${room.number} (${room.status.toLowerCase()})${room.tenant ? ` - ${room.tenant.names}` : ''}`}
                               >
                                 {room.building.number}-{room.number}
                                 {room._count.assets > 0 && (
-                                  <span className="ml-1 opacity-75">•{room._count.assets}</span>
+                                  <span className="ml-1.5 opacity-75">•{room._count.assets}</span>
                                 )}
                               </Link>
                             ))}
                           </div>
-                          <div className="flex flex-wrap gap-4 mt-3 text-xs text-gray-500">
-                            <div className="flex items-center gap-1">
-                              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                          <div className="flex flex-wrap gap-4 text-xs text-gray-500">
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-2.5 h-2.5 bg-green-500 rounded-full"></span>
                               <span>Available</span>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-2.5 h-2.5 bg-blue-500 rounded-full"></span>
                               <span>Occupied</span>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-2.5 h-2.5 bg-yellow-500 rounded-full"></span>
                               <span>Cleaning</span>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-2.5 h-2.5 bg-orange-500 rounded-full"></span>
                               <span>Maintenance</span>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="w-2.5 h-2.5 bg-red-500 rounded-full"></span>
                               <span>Out of Service</span>
                             </div>
                           </div>
                         </div>
                       ) : (
-                        <div className="text-center py-4 text-gray-500 text-sm">
+                        <div className="text-center py-6 text-gray-500 text-sm bg-gray-50 rounded-lg">
                           No rooms configured for this site
                         </div>
                       )}
 
                       {/* Site Manager */}
                       {site.siteManager && (
-                        <div className="mb-4 p-3 bg-gray-50 rounded-md">
-                          <p className="text-xs text-gray-500 mb-1">Site Manager</p>
-                          <p className="text-sm font-medium text-gray-900">{site.siteManager.name || site.siteManager.email}</p>
+                        <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl">
+                          <p className="text-xs text-gray-500 mb-1 font-medium">Site Manager</p>
+                          <p className="text-sm font-semibold text-gray-900">{site.siteManager.name || site.siteManager.email}</p>
                         </div>
                       )}
-
+                    </CardContent>
+                    <CardFooter>
                       {/* Action Buttons */}
-                      <div className="flex gap-2">
+                      <div className="flex gap-3">
                         <Link
                           href={`/sites/${site.id}`}
-                          className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors touch-manipulation"
+                          className="flex-1 text-center bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-2.5 px-4 rounded-xl transition-modern text-sm touch-manipulation"
                         >
                           View Details
                         </Link>
                         <Link
                           href={`/sites/${site.id}/edit`}
-                          className="flex-1 text-center bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors touch-manipulation"
+                          className="flex-1 text-center bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-semibold py-2.5 px-4 rounded-xl transition-modern text-sm touch-manipulation"
                         >
                           Edit Site
                         </Link>
                       </div>
-                    </div>
-                  </div>
+                    </CardFooter>
+                  </Card>
                 )
               })
             )}
