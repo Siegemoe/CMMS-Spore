@@ -14,10 +14,14 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '20')
-    const search = searchParams.get('search') || ''
-    const status = searchParams.get('status') || ''
+    const rawPage = parseInt(searchParams.get('page') ?? '', 10)
+    const rawLimit = parseInt(searchParams.get('limit') ?? '', 10)
+    const page = Number.isNaN(rawPage) || rawPage < 1 ? 1 : rawPage
+    const limit = Number.isNaN(rawLimit) || rawLimit < 1 ? 20 : Math.min(rawLimit, 100)
+    const search = (searchParams.get('search') || '').trim()
+    const statusParam = (searchParams.get('status') || '').trim().toUpperCase()
+    const allowedStatuses = new Set(['ACTIVE', 'INACTIVE'])
+    const status = allowedStatuses.has(statusParam) ? statusParam : undefined
 
     const skip = (page - 1) * limit
 
@@ -28,7 +32,7 @@ export async function GET(request: NextRequest) {
           { address: { contains: search, mode: 'insensitive' as const } },
         ]
       }),
-      ...(status && { status }),
+      ...(status ? { status } : {}),
       NOT: { status: 'ARCHIVED' }
     }
 
@@ -114,8 +118,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const { siteManagerId, ...siteData } = validation.data!
+    const cleanedSiteData = {
+      ...siteData,
+      ...(siteManagerId && siteManagerId.trim() !== '' ? { siteManagerId: siteManagerId.trim() } : {}),
+    }
+
     const site = await prisma.site.create({
-      data: validation.data!,
+      data: cleanedSiteData,
       include: {
         siteManager: {
           select: {
