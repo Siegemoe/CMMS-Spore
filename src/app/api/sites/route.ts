@@ -7,6 +7,24 @@ import { z } from 'zod'
 import { logActivity } from '@/lib/robust-activity-logger'
 
 export async function GET(request: NextRequest) {
+  // TODO: remove diagnostics after verifying production
+  
+  // Check required environment variables
+  const missingEnvVars = []
+  if (!process.env.NEXTAUTH_SECRET) missingEnvVars.push('NEXTAUTH_SECRET')
+  if (!process.env.NEXTAUTH_URL) missingEnvVars.push('NEXTAUTH_URL')
+  if (!process.env.DATABASE_URL) missingEnvVars.push('DATABASE_URL')
+  
+  if (missingEnvVars.length > 0) {
+    console.error(`[sites-api] GET: Missing environment variables: ${missingEnvVars.join(', ')}`)
+    return NextResponse.json(
+      { error: `Server configuration error: Missing ${missingEnvVars.join(', ')}` },
+      { status: 500 }
+    )
+  }
+  
+  console.log(`[sites-api] GET: Environment variables validated`)
+  
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
@@ -36,8 +54,11 @@ export async function GET(request: NextRequest) {
       NOT: { status: 'ARCHIVED' }
     }
 
-    const [sites, total] = await Promise.all([
-      prisma.site.findMany({
+    let sites, total
+    try {
+      console.log(`[sites-api] GET: Attempting Prisma query`)
+      const result = await Promise.all([
+        prisma.site.findMany({
         where,
         include: {
           siteManager: {
@@ -79,9 +100,17 @@ export async function GET(request: NextRequest) {
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit
-      }),
-      prisma.site.count({ where })
-    ])
+        }),
+        prisma.site.count({ where })
+      ])
+      sites = result[0]
+      total = result[1]
+      console.log(`[sites-api] GET: Prisma query successful, found ${total} sites`)
+    } catch (prismaError) {
+      console.error('[sites-api] GET: Prisma query failed:', prismaError)
+      console.error('[sites-api] GET: Prisma error stack:', (prismaError as Error).stack)
+      throw prismaError // Re-throw to maintain existing error handling
+    }
 
     return NextResponse.json({
       data: sites,
@@ -102,6 +131,24 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // TODO: remove diagnostics after verifying production
+  
+  // Check required environment variables
+  const missingEnvVars = []
+  if (!process.env.NEXTAUTH_SECRET) missingEnvVars.push('NEXTAUTH_SECRET')
+  if (!process.env.NEXTAUTH_URL) missingEnvVars.push('NEXTAUTH_URL')
+  if (!process.env.DATABASE_URL) missingEnvVars.push('DATABASE_URL')
+  
+  if (missingEnvVars.length > 0) {
+    console.error(`[sites-api] POST: Missing environment variables: ${missingEnvVars.join(', ')}`)
+    return NextResponse.json(
+      { error: `Server configuration error: Missing ${missingEnvVars.join(', ')}` },
+      { status: 500 }
+    )
+  }
+  
+  console.log(`[sites-api] POST: Environment variables validated`)
+  
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
@@ -124,7 +171,13 @@ export async function POST(request: NextRequest) {
       ...(siteManagerId && siteManagerId.trim() !== '' ? { siteManagerId: siteManagerId.trim() } : {}),
     }
 
-    const site = await prisma.site.create({
+    let site
+    try {
+      console.log(`[sites-api] POST: Attempting to create site with data:`, {
+        name: cleanedSiteData.name,
+        siteManagerId: cleanedSiteData.siteManagerId
+      })
+      site = await prisma.site.create({
       data: cleanedSiteData,
       include: {
         siteManager: {
@@ -135,7 +188,13 @@ export async function POST(request: NextRequest) {
           }
         }
       }
-    })
+      })
+      console.log(`[sites-api] POST: Site created successfully with ID: ${site.id}`)
+    } catch (prismaError) {
+      console.error('[sites-api] POST: Prisma create failed:', prismaError)
+      console.error('[sites-api] POST: Prisma error stack:', (prismaError as Error).stack)
+      throw prismaError // Re-throw to maintain existing error handling
+    }
 
     // TODO: Fix activity logging - temporarily disabled for debugging
     // await logActivity({
