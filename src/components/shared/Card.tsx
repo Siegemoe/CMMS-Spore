@@ -39,7 +39,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     const classes = cn(
       variantClasses[variant],
       paddingClasses[padding],
-      hover && "hover-lift cursor-pointer",
+      hover && "hover-lift cursor-pointer isolation-auto overflow-visible",
       className
     )
 

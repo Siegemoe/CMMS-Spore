@@ -123,7 +123,7 @@ export default function Sites() {
   return (
     <div className="min-h-screen gradient-bg-subtle">
       <Navbar />
-      <div className="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8 relative z-base">
         <div className="px-0 py-4 sm:py-6 sm:px-0">
           <div className="mb-6 sm:mb-8">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">

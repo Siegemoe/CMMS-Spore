@@ -18,7 +18,7 @@ export default function Navbar() {
   const getAriaExpanded = () => isMenuOpen ? "true" : "false"
 
   return (
-    <nav className="bg-blue-600 text-white shadow-lg">
+    <nav className="bg-blue-600 text-white shadow-lg relative z-base">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
@@ -130,8 +130,8 @@ export default function Navbar() {
         </div>
 
         {/* Mobile menu panel */}
-        <div id="mobile-menu" className={`md:hidden transition-all duration-300 ease-in-out ${
-          isMenuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
+        <div id="mobile-menu" className={`md:hidden transition-all duration-300 ease-in-out relative z-dropdown ${
+          isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
         }`}>
           <div className="px-2 pt-2 pb-3 space-y-1 border-t border-blue-400">
             <Link

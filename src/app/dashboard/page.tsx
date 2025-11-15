@@ -53,7 +53,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen gradient-bg-subtle">
       <Navbar />
-      <div className="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8 relative z-base">
         <div className="px-0 py-4 sm:py-6 sm:px-0">
           <div className="mb-6 sm:mb-8">
             <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>

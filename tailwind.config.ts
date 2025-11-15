@@ -80,6 +80,14 @@ const config: Config = {
           '100%': { transform: 'translateY(0)', opacity: '1' },
         },
       },
+      // Z-index scale for proper layering
+      zIndex: {
+        'base': '0',
+        'dropdown': '60',
+        'modal': '70',
+        'tooltip': '80',
+        'toast': '90',
+      },
     },
   },
   plugins: [],

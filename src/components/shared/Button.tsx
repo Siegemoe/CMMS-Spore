@@ -4,11 +4,12 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "danger" | "ghost"
   size?: "sm" | "md" | "lg"
   fullWidth?: boolean
+  floating?: boolean
   children: React.ReactNode
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ variant = "primary", size = "md", fullWidth = false, className = "", children, ...props }, ref) => {
+  ({ variant = "primary", size = "md", fullWidth = false, floating = false, className = "", children, ...props }, ref) => {
     const baseClasses = "font-medium rounded-xl transition-modern focus:outline-none focus:ring-2 focus:ring-offset-2 touch-manipulation relative overflow-hidden group"
 
     const variantClasses = {
@@ -35,6 +36,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       variantClasses[variant],
       size === "md" ? responsiveSizeClasses.md : sizeClasses[size],
       fullWidth && "w-full sm:w-auto",
+      floating && "z-dropdown",
       className
     ].filter(Boolean).join(" ")
 
@@ -44,7 +46,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className={classes}
         {...props}
       >
-        <span className="relative z-10 flex items-center justify-center gap-2">
+        <span className="relative flex items-center justify-center gap-2">
           {children}
         </span>
         {/* Subtle shine effect on hover */}

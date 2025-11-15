@@ -27,6 +27,12 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    /* Z-index scale variables */
+    --z-base: 0;
+    --z-dropdown: 60;
+    --z-modal: 70;
+    --z-tooltip: 80;
+    --z-toast: 90;
   }
 
   .dark {
@@ -146,5 +152,34 @@
 
   .card-modern-compact {
     @apply bg-white rounded-lg shadow-modern border border-gray-100 transition-modern;
+  }
+
+  /* Z-index utility classes for proper layering */
+  .layer-dropdown {
+    position: relative;
+    z-index: var(--z-dropdown);
+  }
+
+  .layer-modal {
+    position: relative;
+    z-index: var(--z-modal);
+  }
+
+  .layer-tooltip {
+    position: relative;
+    z-index: var(--z-tooltip);
+  }
+
+  .layer-toast {
+    position: relative;
+    z-index: var(--z-toast);
+  }
+
+  /* Ensure dropdowns and overlays can escape clipping contexts */
+  .dropdown-safe {
+    position: relative;
+    z-index: var(--z-dropdown);
+    overflow: visible;
+    pointer-events: auto;
   }
 }
