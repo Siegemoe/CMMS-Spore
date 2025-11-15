@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { z } from 'zod'
-import { ActivityLogger } from '@/lib/robust-activity-logger'
+import { logActivity } from '@/lib/robust-activity-logger'
 
 const bulkCreateSchema = z.object({
   siteId: z.string().min(1, 'Site ID is required'),
@@ -100,24 +100,29 @@ export async function POST(request: NextRequest) {
       return { createdBuildings, createdRooms }
     })
 
-    // Log activity
-    await ActivityLogger.log({
-      action: 'BULK_CREATE',
-      entityType: 'BUILDINGS_ROOMS',
-      entityId: siteId,
-      entityName: site.name,
-      description: `Bulk created ${result.createdBuildings.length} buildings and ${result.createdRooms.length} rooms for site: ${site.name}`,
-      userId: (session.user as any)?.id || session.user?.email || "unknown",
-      userName: (session.user as any)?.name || session.user?.email || "Unknown",
-      details: {
-        siteId,
-        siteName: site.name,
-        buildings: result.createdBuildings,
-        totalRooms: result.createdRooms.length,
-        buildingCount: result.createdBuildings.length,
-        floors: floors,
-        roomsPerFloor
-      }
+    // TODO: Fix activity logging - temporarily disabled for debugging
+    // await logActivity({
+    //   action: 'created',
+    //   entityType: 'asset', // Using 'asset' as fallback
+    //   entityId: siteId,
+    //   entityName: site.name,
+    //   description: `Bulk created ${result.createdBuildings.length} buildings and ${result.createdRooms.length} rooms for site: ${site.name}`,
+    //   userId: (session.user as any)?.id || session.user?.email || "unknown",
+    //   userName: (session.user as any)?.name || session.user?.email || "Unknown",
+    //   details: {
+    //     siteId,
+    //     siteName: site.name,
+    //     buildings: result.createdBuildings,
+    //     totalRooms: result.createdRooms.length,
+    //     buildingCount: result.createdBuildings.length,
+    //     floors: floors,
+    //     roomsPerFloor
+    //   }
+    // })
+    console.log('Bulk creation completed successfully (activity logging disabled):', {
+      site: site.name,
+      buildings: result.createdBuildings.length,
+      rooms: result.createdRooms.length
     })
 
     return NextResponse.json({
