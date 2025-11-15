@@ -461,7 +461,7 @@ async function main() {
         description: 'Created new site: Archer Ranch West',
         userId: users[0].id,
         userName: users[0].name!,
-        details: { siteId: sites[0].id, siteName: sites[0].name },
+        details: JSON.stringify({ siteId: sites[0].id, siteName: sites[0].name }) as string,
       }
     }),
     prisma.activityLog.create({
@@ -473,7 +473,7 @@ async function main() {
         description: 'Created new asset: Main HVAC Unit A-101',
         userId: users[0].id,
         userName: users[0].name!,
-        details: { assetId: assets[0].id, assetTag: assets[0].assetTag },
+        details: JSON.stringify({ assetId: assets[0].id, assetTag: assets[0].assetTag }) as string,
       }
     }),
     prisma.activityLog.create({
@@ -485,7 +485,7 @@ async function main() {
         description: 'Created new work order: Preventive Maintenance - HVAC A-101',
         userId: users[1].id,
         userName: users[1].name!,
-        details: { workOrderNumber: workOrders[0].workOrderNumber, priority: workOrders[0].priority },
+        details: JSON.stringify({ workOrderNumber: workOrders[0].workOrderNumber, priority: workOrders[0].priority }) as string,
       }
     }),
   ])
