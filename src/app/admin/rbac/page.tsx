@@ -52,7 +52,7 @@ export default function RBACManagement() {
       fetchRoles()
       fetchPermissions()
     }
-  }, [isAuthenticated, can])
+  }, [isAuthenticated]) // Remove 'can' from dependencies to prevent infinite loops
 
   const fetchRoles = async () => {
     try {
