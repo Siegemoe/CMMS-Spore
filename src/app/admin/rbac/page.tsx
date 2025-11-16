@@ -48,11 +48,11 @@ export default function RBACManagement() {
   const [activeTab, setActiveTab] = useState<'roles' | 'permissions'>('roles')
 
   useEffect(() => {
-    if (isAuthenticated && can(PERMISSIONS.SYSTEM_ADMIN)) {
+    if (isAuthenticated && session?.user?.role === 'ADMIN') {
       fetchRoles()
       fetchPermissions()
     }
-  }, [isAuthenticated]) // Remove 'can' from dependencies to prevent infinite loops
+  }, [isAuthenticated, session?.user?.role])
 
   const fetchRoles = async () => {
     try {
@@ -67,6 +67,8 @@ export default function RBACManagement() {
     } catch (error) {
       console.error("Failed to fetch roles:", error)
       setError("Something went wrong")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -83,6 +85,8 @@ export default function RBACManagement() {
     } catch (error) {
       console.error("Failed to fetch permissions:", error)
       setError("Something went wrong")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -114,7 +118,7 @@ export default function RBACManagement() {
     return <Loading />
   }
 
-  if (!isAuthenticated || !can(PERMISSIONS.SYSTEM_ADMIN)) {
+  if (!isAuthenticated || session?.user?.role !== 'ADMIN') {
     return (
       <div className="min-h-screen gradient-bg-subtle">
         <Navbar />
