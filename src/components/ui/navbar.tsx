@@ -90,6 +90,18 @@ export default function Navbar() {
                 Users
               </Link>
             </PermissionGuard>
+            <PermissionGuard permissions={[PERMISSIONS.SYSTEM_ADMIN]}>
+              <Link
+                href="/admin/rbac"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive("/admin/rbac")
+                    ? "bg-blue-700 text-white"
+                    : "text-white hover:bg-blue-500"
+                }`}
+              >
+                RBAC
+              </Link>
+            </PermissionGuard>
             <div className="flex items-center space-x-3 ml-4 border-l border-blue-400 pl-4">
               <span className="text-sm font-medium truncate max-w-[120px]">
                 {session.user?.name || session.user?.email}
@@ -216,6 +228,19 @@ export default function Navbar() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Users
+              </Link>
+            </PermissionGuard>
+            <PermissionGuard permissions={[PERMISSIONS.SYSTEM_ADMIN]}>
+              <Link
+                href="/admin/rbac"
+                className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
+                  isActive("/admin/rbac")
+                    ? "bg-blue-700 text-white"
+                    : "text-white hover:bg-blue-500"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                RBAC
               </Link>
             </PermissionGuard>
             <div className="border-t border-blue-400 pt-3 mt-3">

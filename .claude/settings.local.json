@@ -10,7 +10,8 @@
       "Bash(npm run build:*)",
       "Bash(tree:*)",
       "Bash(npm run db:seed:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
