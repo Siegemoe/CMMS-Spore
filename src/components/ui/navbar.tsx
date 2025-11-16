@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { useAuthorization, PermissionGuard } from "@/hooks/useAuthorization"
 import { PERMISSIONS } from "@/lib/authorization"
-import UserProfileDropdown from "@/components/ui/UserProfileDropdown"
+import UserProfileDropdown, { MobileProfileBadge } from "@/components/ui/UserProfileDropdown"
 
 export default function Navbar() {
   const { data: session } = useSession()
@@ -22,7 +22,7 @@ export default function Navbar() {
   const getAriaExpanded = () => isMenuOpen ? "true" : "false"
 
   return (
-    <nav className="bg-blue-600 text-white shadow-lg relative z-base">
+    <nav className="bg-blue-600 text-white shadow-lg relative z-[9998]">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
@@ -126,7 +126,7 @@ export default function Navbar() {
             >
               SMAC
             </Link>
-            <div className="ml-4">
+            <div className="ml-4 hidden md:block">
               <UserProfileDropdown />
             </div>
           </div>
@@ -284,17 +284,12 @@ export default function Navbar() {
             >
               SMAC
             </Link>
-            <div className="border-t border-blue-400 pt-3 mt-3">
-              <div className="px-3 py-2 text-sm text-blue-100">
-                Profile & Settings
-              </div>
-              <div className="px-3 py-2 bg-blue-700 rounded-md">
-                <UserProfileDropdown />
-              </div>
             </div>
-          </div>
         </div>
       </div>
     </nav>
+
+    {/* Mobile Floating Profile Badge */}
+    <MobileProfileBadge />
   )
 }
