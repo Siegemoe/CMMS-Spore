@@ -1,10 +1,12 @@
 "use client"
 
+import { useState } from "react"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
 
 export default function SMACPage() {
   const { data: session } = useSession()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
     <div className="min-h-screen gradient-bg-subtle">
@@ -35,35 +37,72 @@ export default function SMACPage() {
 
             {/* Mobile menu button */}
             <div className="md:hidden">
-              <div className="flex items-center space-x-2">
-                <Link
-                  href={session ? "/dashboard" : "/auth/signin"}
-                  className="bg-blue-700 hover:bg-blue-800 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                aria-controls="smac-mobile-menu"
+                aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+                type="button"
+                role="button"
+                tabIndex={0}
+              >
+                {/* Hamburger icon */}
+                <svg
+                  className={`${isMenuOpen ? 'hidden' : 'block'} h-6 w-6`}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
                 >
-                  {session ? "CMMS" : "Sign In"}
-                </Link>
-                <button
-                  className="inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
-                  type="button"
-                  aria-label="Open navigation menu"
-                  title="Open navigation menu"
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+                {/* Close icon */}
+                <svg
+                  className={`${isMenuOpen ? 'block' : 'hidden'} h-6 w-6`}
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  aria-hidden="true"
                 >
-                  <svg
-                    className="h-6 w-6"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  </svg>
-                </button>
-              </div>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile menu panel */}
+          <div id="smac-mobile-menu" className={`md:hidden transition-all duration-300 ease-in-out relative z-dropdown ${
+            isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          }`}>
+            <div className="px-2 pt-2 pb-3 space-y-1 border-t border-blue-400">
+              <Link
+                href="/smac"
+                className={`block px-3 py-3 rounded-md text-base font-medium transition-colors bg-blue-700 text-white`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                SMAC
+              </Link>
+              <Link
+                href={session ? "/dashboard" : "/auth/signin"}
+                className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
+                  session ? "text-white hover:bg-blue-500" : "text-white hover:bg-blue-500"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                {session ? "CMMS" : "Sign In"}
+              </Link>
             </div>
           </div>
         </div>

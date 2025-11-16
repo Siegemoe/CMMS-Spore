@@ -23,6 +23,8 @@ model User {
   managedSites        Site[]        @relation("SiteManager")
   maintainedBuildings Building[]    @relation("FacilityTechnician")
   userRoles           UserRole[]
+  notifications        Notification[]
+  notificationPreferences UserNotificationPreference[]
 
   @@map("users")
 }
@@ -262,4 +264,43 @@ model RolePermission {
 
   @@unique([roleId, permissionId])
   @@map("role_permissions")
+}
+
+// Notification System Models
+model Notification {
+  id          String      @id @default(cuid())
+  title       String
+  message     String
+  type        String      // INFO, SUCCESS, WARNING, ERROR, WORK_ORDER, MAINTENANCE, SYSTEM
+  isRead      Boolean    @default(false)
+  userId      String?
+  user        User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entityId    String?     // Optional: link to related entity (work order, asset, etc.)
+  entityType  String?     // Optional: type of related entity
+  actionUrl   String?     // Optional: URL for user to click
+  metadata    Json?       // Optional: additional data as JSON
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([type])
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model UserNotificationPreference {
+  id                  String   @id @default(cuid())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notificationType     String   // Type of notification: WORK_ORDER, MAINTENANCE, SYSTEM, ASSET
+  emailEnabled        Boolean  @default(true)
+  inAppEnabled       Boolean  @default(true)
+  frequency           String?  // For recurring notifications: IMMEDIATE, DAILY, WEEKLY
+  customSettings      Json?    // Custom settings per notification type
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([userId, notificationType])
+  @@map("user_notification_preferences")
 }

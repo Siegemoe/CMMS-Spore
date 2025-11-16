@@ -115,6 +115,26 @@ export default function Navbar() {
               </Link>
             </PermissionGuard>
             <Link
+              href="/connect"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive("/connect")
+                  ? "bg-blue-700 text-white"
+                  : "text-white hover:bg-blue-500"
+              }`}
+            >
+              Connect
+            </Link>
+            <Link
+              href="/settings/profile"
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                isActive("/settings")
+                  ? "bg-blue-700 text-white"
+                  : "text-white hover:bg-blue-500"
+              }`}
+            >
+              Settings
+            </Link>
+            <Link
               href="/smac"
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive("/smac")
@@ -279,6 +299,28 @@ export default function Navbar() {
                 RBAC
               </Link>
             </PermissionGuard>
+            <Link
+              href="/connect"
+              className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
+                isActive("/connect")
+                  ? "bg-blue-700 text-white"
+                  : "text-white hover:bg-blue-500"
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Connect
+            </Link>
+            <Link
+              href="/settings/profile"
+              className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
+                isActive("/settings")
+                  ? "bg-blue-700 text-white"
+                  : "text-white hover:bg-blue-500"
+              }`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Settings
+            </Link>
             <Link
               href="/smac"
               className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
