@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
           updatedAt: true,
           _count: {
             select: {
-              createdAssets: { where: { status: { not: 'ARCHIVED' } } },
+              assets: { where: { status: { not: 'ARCHIVED' } } },
               assignedWorkOrders: { where: { status: { not: 'COMPLETED' } } },
               managedSites: { where: { status: { not: 'ARCHIVED' } } }
             }

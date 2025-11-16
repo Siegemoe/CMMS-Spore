@@ -73,7 +73,7 @@ async function testRBAC() {
       console.log(`   Permissions: ${role.rolePermissions.length}`)
 
       // Categorize permissions
-      const resources = {}
+      const resources: Record<string, string[]> = {}
       for (const rp of role.rolePermissions) {
         const resource = rp.permission.resource
         if (!resources[resource]) {
@@ -97,7 +97,7 @@ async function testRBAC() {
     console.log(`   - Total Permissions: ${allPermissions.length}`)
 
     // Count users per role
-    const roleCounts = {}
+    const roleCounts: Record<string, number> = {}
     for (const user of users) {
       const roles = await getUserRoles(user.id)
       for (const role of roles) {

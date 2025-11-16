@@ -46,7 +46,7 @@ export async function GET(request: NextRequest, { params }: Params) {
         updatedAt: true,
         _count: {
           select: {
-            createdAssets: { where: { status: { not: 'ARCHIVED' } } },
+            assets: { where: { status: { not: 'ARCHIVED' } } },
             assignedWorkOrders: { where: { status: { not: 'COMPLETED' } } },
             managedSites: { where: { status: { not: 'ARCHIVED' } } }
           }
@@ -120,10 +120,11 @@ export async function PUT(request: NextRequest, { params }: Params) {
     let updateData: any = {}
 
     if (isProfileUpdate) {
+      const profileUpdateData = validation.data as { name: string; email: string; role: "ADMIN" | "USER" | "TECHNICIAN" }
       // Check if email is being changed and if it conflicts with another user
-      if (validation.data.email !== existingUser.email) {
+      if (profileUpdateData.email !== existingUser.email) {
         const emailConflict = await prisma.user.findUnique({
-          where: { email: validation.data.email }
+          where: { email: profileUpdateData.email }
         })
         if (emailConflict) {
           return NextResponse.json(
@@ -134,14 +135,15 @@ export async function PUT(request: NextRequest, { params }: Params) {
       }
 
       updateData = {
-        name: validation.data.name,
-        email: validation.data.email,
-        role: session.user?.role === 'ADMIN' ? validation.data.role : existingUser.role, // Only admins can change roles
+        name: profileUpdateData.name,
+        email: profileUpdateData.email,
+        role: session.user?.role === 'ADMIN' ? profileUpdateData.role : existingUser.role, // Only admins can change roles
       }
     } else if (isPasswordUpdate) {
+      const passwordUpdateData = validation.data as { currentPassword: string; newPassword: string }
       // Verify current password
       const isCurrentPasswordValid = await bcrypt.compare(
-        validation.data.currentPassword,
+        passwordUpdateData.currentPassword,
         existingUser.password
       )
 
@@ -152,7 +154,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
         )
       }
 
-      updateData.password = await bcrypt.hash(validation.data.newPassword, 10)
+      updateData.password = await bcrypt.hash(passwordUpdateData.newPassword, 10)
     }
 
     const user = await prisma.user.update({
@@ -209,7 +211,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
       include: {
         _count: {
           select: {
-            createdAssets: true,
+            assets: true,
             assignedWorkOrders: true,
             managedSites: true
           }
@@ -223,7 +225,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
 
     // Prevent deletion of users with assets, work orders, or managed sites
     if (
-      existingUser._count.createdAssets > 0 ||
+      existingUser._count.assets > 0 ||
       existingUser._count.assignedWorkOrders > 0 ||
       existingUser._count.managedSites > 0
     ) {
@@ -231,7 +233,7 @@ export async function DELETE(request: NextRequest, { params }: Params) {
         {
           error: 'Cannot delete user with existing assets, work orders, or managed sites. Reassign or archive these first.',
           details: {
-            assets: existingUser._count.createdAssets,
+            assets: existingUser._count.assets,
             workOrders: existingUser._count.assignedWorkOrders,
             managedSites: existingUser._count.managedSites
           }

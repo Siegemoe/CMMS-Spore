@@ -16,7 +16,7 @@ interface User {
   createdAt: string
   updatedAt: string
   _count: {
-    createdAssets: number
+    assets: number
     assignedWorkOrders: number
     managedSites: number
   }
@@ -296,7 +296,7 @@ export default function UserManagement() {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {user._count.createdAssets}
+                            {user._count.assets}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {user._count.assignedWorkOrders}

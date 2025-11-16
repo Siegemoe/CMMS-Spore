@@ -125,13 +125,7 @@ export default function SiteDetails() {
     }
   }
 
-  const getAllRoomsForSite = () => {
-    if (!site) return []
-    return site.buildings.flatMap(building =>
-      Array.isArray(building.rooms) ? building.rooms : []
-    )
-  }
-
+  
   if (isLoading || loading) {
     return <Loading />
   }
@@ -163,7 +157,7 @@ export default function SiteDetails() {
     )
   }
 
-  const allRooms = getAllRoomsForSite()
+  const allRooms: any[] = [] // TODO: Implement room fetching when needed
 
   return (
     <div className="min-h-screen gradient-bg-subtle">
@@ -289,8 +283,8 @@ export default function SiteDetails() {
                 </Card>
               )}
 
-              {/* Room Overview */}
-              {allRooms.length > 0 && (
+              {/* Room Overview - TODO: Implement room fetching when needed */}
+              {/* {allRooms.length > 0 && ( */}
                 <Card variant="elevated">
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -336,7 +330,7 @@ export default function SiteDetails() {
                     </div>
                   </CardContent>
                 </Card>
-              )}
+              {/* )} */}
             </div>
 
             {/* Sidebar */}

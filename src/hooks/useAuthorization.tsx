@@ -3,6 +3,7 @@
 import { useSession } from 'next-auth/react'
 import { useMemo } from 'react'
 import { Permission, PERMISSIONS } from '@/lib/authorization'
+import React from 'react'
 
 interface UseAuthorizationReturn {
   can: (permission: Permission) => boolean
@@ -31,7 +32,7 @@ export function useAuthorization(): UseAuthorizationReturn {
 
     switch (userRole) {
       case 'ADMIN':
-        return Object.values(PERMISSIONS)
+        return Object.values(PERMISSIONS) as Permission[]
 
       case 'TECHNICIAN':
         return [
