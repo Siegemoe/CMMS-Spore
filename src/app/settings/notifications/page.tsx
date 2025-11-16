@@ -64,11 +64,11 @@ export default function NotificationSettings() {
         const data = await response.json()
         setPreferences(data.data)
       } else {
-        showToast("error", "Failed to load notification preferences")
+        showToast({ type: "error", title: "Failed to load notification preferences" })
       }
     } catch (error) {
       console.error("Failed to fetch preferences:", error)
-      showToast("error", "Something went wrong")
+      showToast({ type: "error", title: "Something went wrong" })
     } finally {
       setLoading(false)
     }
@@ -98,15 +98,15 @@ export default function NotificationSettings() {
       })
 
       if (response.ok) {
-        showToast("success", "Notification preferences saved successfully")
+        showToast({ type: "success", title: "Notification preferences saved successfully" })
         await fetchPreferences() // Refresh data
       } else {
         const data = await response.json()
-        showToast("error", "Failed to save preferences", data.error)
+        showToast({ type: "error", title: "Failed to save preferences", message: data.error })
       }
     } catch (error) {
       console.error("Failed to save preferences:", error)
-      showToast("error", "Something went wrong")
+      showToast({ type: "error", title: "Something went wrong" })
     } finally {
       setSaving(false)
     }

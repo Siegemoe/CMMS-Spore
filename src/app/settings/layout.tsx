@@ -43,7 +43,7 @@ export default function SettingsLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { data: session, isLoading: authLoading, isAuthenticated } = useAuthRedirect()
+  const { session, isLoading: authLoading, isAuthenticated } = useAuthRedirect()
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 

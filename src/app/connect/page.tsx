@@ -204,14 +204,14 @@ export default function ConnectPage() {
 
   const handleConnect = (integrationId: string, integrationName: string) => {
     // Simulate connection process
-    showToast("info", "Connecting...", `Establishing connection to ${integrationName}`)
+    showToast({ type: "info", title: "Connecting...", message: `Establishing connection to ${integrationName}` })
 
     setTimeout(() => {
       setConnectionStatus(prev => ({
         ...prev,
         [integrationId]: "connected"
       }))
-      showToast("success", "Connected Successfully", `${integrationName} has been connected to your account`)
+      showToast({ type: "success", title: "Connected Successfully", message: `${integrationName} has been connected to your account` })
     }, 2000)
   }
 
@@ -220,7 +220,7 @@ export default function ConnectPage() {
       ...prev,
       [integrationId]: "disconnected"
     }))
-    showToast("info", "Disconnected", `${integrationName} has been disconnected from your account`)
+    showToast({ type: "info", title: "Disconnected", message: `${integrationName} has been disconnected from your account` })
   }
 
   return (
@@ -336,7 +336,7 @@ export default function ConnectPage() {
                         <Button
                           variant="secondary"
                           className="flex-1"
-                          onClick={() => showToast("info", "Beta Program", "Join our beta program to get early access")}
+                          onClick={() => showToast({ type: "info", title: "Beta Program", message: "Join our beta program to get early access" })}
                         >
                           Join Beta
                         </Button>

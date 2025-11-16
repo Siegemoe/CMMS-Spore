@@ -21,12 +21,12 @@ export default function SecuritySettings() {
     e.preventDefault()
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      showToast("error", "Passwords do not match")
+      showToast({ type: "error", title: "Passwords do not match" })
       return
     }
 
     if (passwordData.newPassword.length < 8) {
-      showToast("error", "Password must be at least 8 characters long")
+      showToast({ type: "error", title: "Password must be at least 8 characters long" })
       return
     }
 
@@ -45,7 +45,7 @@ export default function SecuritySettings() {
       })
 
       if (response.ok) {
-        showToast("success", "Password changed successfully")
+        showToast({ type: "success", title: "Password changed successfully" })
         setPasswordData({
           currentPassword: "",
           newPassword: "",
@@ -53,11 +53,11 @@ export default function SecuritySettings() {
         })
       } else {
         const data = await response.json()
-        showToast("error", "Failed to change password", data.error)
+        showToast({ type: "error", title: "Failed to change password", message: data.error })
       }
     } catch (error) {
       console.error("Failed to change password:", error)
-      showToast("error", "Something went wrong")
+      showToast({ type: "error", title: "Something went wrong" })
     } finally {
       setLoading(false)
     }

@@ -36,14 +36,14 @@ export default function ProfileSettings() {
       })
 
       if (response.ok) {
-        showToast("success", "Profile updated successfully")
+        showToast({ type: "success", title: "Profile updated successfully" })
       } else {
         const data = await response.json()
-        showToast("error", "Failed to update profile", data.error)
+        showToast({ type: "error", title: "Failed to update profile", message: data.error })
       }
     } catch (error) {
       console.error("Failed to update profile:", error)
-      showToast("error", "Something went wrong")
+      showToast({ type: "error", title: "Something went wrong" })
     } finally {
       setLoading(false)
     }
