@@ -114,17 +114,6 @@ export default function Navbar() {
                 RBAC
               </Link>
             </PermissionGuard>
-            <Link
-              href="/smac"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive("/smac")
-                  ? "bg-blue-700 text-white"
-                  : "text-white hover:bg-blue-500"
-              }`}
-              title="Smart Building Access Control"
-            >
-              SMAC
-            </Link>
             <div className="flex items-center space-x-3 ml-4 border-l border-blue-400 pl-4">
               <span className="text-sm font-medium truncate max-w-[120px]">
                 {session.user?.name || session.user?.email}
@@ -279,18 +268,6 @@ export default function Navbar() {
                 RBAC
               </Link>
             </PermissionGuard>
-            <Link
-              href="/smac"
-              className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
-                isActive("/smac")
-                  ? "bg-blue-700 text-white"
-                  : "text-white hover:bg-blue-500"
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-              title="Smart Building Access Control"
-            >
-              SMAC
-            </Link>
             <div className="border-t border-blue-400 pt-3 mt-3">
               <div className="px-3 py-2 text-sm text-blue-100 truncate">
                 {session.user?.name || session.user?.email}
