@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import Navbar from "@/components/ui/navbar"
@@ -38,7 +38,7 @@ interface Building {
   number: string
 }
 
-export default function RoomsList() {
+function RoomsListContent() {
   const { session, isLoading, isAuthenticated } = useAuthRedirect()
   const { getStatusColor } = useStatusColors()
   const searchParams = useSearchParams()
@@ -286,5 +286,13 @@ export default function RoomsList() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function RoomsList() {
+  return (
+    <Suspense fallback={<Loading />}>
+      <RoomsListContent />
+    </Suspense>
   )
 }
