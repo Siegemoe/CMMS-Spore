@@ -5,7 +5,8 @@ import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import Navbar from "@/components/ui/navbar"
 import { Loading, Card, CardHeader, CardContent, Button } from "@/components/shared"
-import { useAuthRedirect, useAuthorization } from "@/hooks"
+import { useAuthRedirect } from "@/hooks"
+import { useAuthorization } from "@/hooks/useAuthorization"
 import { PERMISSIONS } from "@/lib/authorization"
 
 interface User {
