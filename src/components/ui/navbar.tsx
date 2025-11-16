@@ -121,7 +121,7 @@ export default function Navbar() {
                   ? "bg-blue-700 text-white"
                   : "text-white hover:bg-blue-500"
               }`}
-              title="Smart Building Access Control"
+              title="Smart Management Access Control"
             >
               SMAC
             </Link>
@@ -287,7 +287,7 @@ export default function Navbar() {
                   : "text-white hover:bg-blue-500"
               }`}
               onClick={() => setIsMenuOpen(false)}
-              title="Smart Building Access Control"
+              title="Smart Management Access Control"
             >
               SMAC
             </Link>

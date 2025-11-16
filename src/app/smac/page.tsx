@@ -84,16 +84,16 @@ export default function SMACPage() {
               </h1>
 
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-800 mb-4">
-                Smart Building Access Control
+                Smart Management Access Control
               </h2>
 
               <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                Advanced access management system for modern facilities. Monitor, control, and secure your building access with intelligent automation.
+                Advanced management platform integrating VSaaS and PACS capabilities for modern facilities. Monitor, control, and secure your premises with intelligent video surveillance and access control systems.
               </p>
             </div>
 
             {/* Features Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 max-w-6xl w-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 max-w-6xl w-full">
               <div className="gradient-bg-card rounded-2xl p-8 border border-gray-200 shadow-modern hover:shadow-modern-lg transition-all duration-300">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-colored">
                   <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -101,7 +101,27 @@ export default function SMACPage() {
                   </svg>
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Smart Authentication</h3>
-                <p className="text-gray-600">Multi-factor authentication with biometric support for enhanced security</p>
+                <p className="text-gray-600">Multi-factor authentication with biometric and visual verification for enhanced security</p>
+              </div>
+
+              <div className="gradient-bg-card rounded-2xl p-8 border border-gray-200 shadow-modern hover:shadow-modern-lg transition-all duration-300">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 shadow-modern">
+                  <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Video Surveillance (VSaaS)</h3>
+                <p className="text-gray-600">AI-powered video analytics with real-time threat detection and live monitoring capabilities</p>
+              </div>
+
+              <div className="gradient-bg-card rounded-2xl p-8 border border-gray-200 shadow-modern hover:shadow-modern-lg transition-all duration-300">
+                <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center mb-4 shadow-modern">
+                  <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Access Control (PACS)</h3>
+                <p className="text-gray-600">Enterprise-grade physical access control with credential management and zone-based security</p>
               </div>
 
               <div className="gradient-bg-card rounded-2xl p-8 border border-gray-200 shadow-modern hover:shadow-modern-lg transition-all duration-300">
@@ -110,18 +130,8 @@ export default function SMACPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Real-time Monitoring</h3>
-                <p className="text-gray-600">Track access events and building occupancy in real-time with detailed analytics</p>
-              </div>
-
-              <div className="gradient-bg-card rounded-2xl p-8 border border-gray-200 shadow-modern hover:shadow-modern-lg transition-all duration-300">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-4 shadow-modern">
-                  <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">Intelligent Control</h3>
-                <p className="text-gray-600">Automated access policies and integration with building management systems</p>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">Intelligent Management</h3>
+                <p className="text-gray-600">Unified platform management with automated policies and seamless system integration</p>
               </div>
             </div>
 
@@ -140,7 +150,7 @@ export default function SMACPage() {
             <div className="gradient-bg-card rounded-2xl p-8 border border-gray-200 shadow-modern-lg max-w-2xl w-full">
               <h3 className="text-2xl font-semibold text-gray-900 mb-4">Be the First to Know</h3>
               <p className="text-gray-600 mb-6">
-                Get notified when SMAC launches and receive early access to our smart building access control system.
+                Get notified when SMAC launches and receive early access to our comprehensive VSaaS and PACS management platform.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <button className="flex-1 gradient-bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:shadow-colored transition-all duration-200 shadow-modern">
@@ -154,7 +164,7 @@ export default function SMACPage() {
 
             {/* Footer Info */}
             <div className="mt-12 text-gray-500 text-sm">
-              <p>SMAC will integrate seamlessly with your existing CMMS infrastructure</p>
+              <p>SMAC integrates seamlessly with your existing CMMS, VSaaS, and PACS infrastructure</p>
             </div>
           </div>
         </div>
