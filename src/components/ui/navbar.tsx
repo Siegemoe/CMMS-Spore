@@ -4,11 +4,14 @@ import { useSession, signOut } from "next-auth/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
+import { useAuthorization, PermissionGuard } from "@/hooks/useAuthorization"
+import { PERMISSIONS } from "@/lib/authorization"
 
 export default function Navbar() {
   const { data: session } = useSession()
   const pathname = usePathname()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { can } = useAuthorization()
 
   if (!session) return null
 
@@ -39,36 +42,54 @@ export default function Navbar() {
             >
               Dashboard
             </Link>
-            <Link
-              href="/sites"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive("/sites")
-                  ? "bg-blue-700 text-white"
-                  : "text-white hover:bg-blue-500"
-              }`}
-            >
-              Sites
-            </Link>
-            <Link
-              href="/assets"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive("/assets")
-                  ? "bg-blue-700 text-white"
-                  : "text-white hover:bg-blue-500"
-              }`}
-            >
-              Assets
-            </Link>
-            <Link
-              href="/work-orders"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive("/work-orders")
-                  ? "bg-blue-700 text-white"
-                  : "text-white hover:bg-blue-500"
-              }`}
-            >
-              Work Orders
-            </Link>
+            <PermissionGuard permissions={[PERMISSIONS.SITES_READ]}>
+              <Link
+                href="/sites"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive("/sites")
+                    ? "bg-blue-700 text-white"
+                    : "text-white hover:bg-blue-500"
+                }`}
+              >
+                Sites
+              </Link>
+            </PermissionGuard>
+            <PermissionGuard permissions={[PERMISSIONS.ASSETS_READ]}>
+              <Link
+                href="/assets"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive("/assets")
+                    ? "bg-blue-700 text-white"
+                    : "text-white hover:bg-blue-500"
+                }`}
+              >
+                Assets
+              </Link>
+            </PermissionGuard>
+            <PermissionGuard permissions={[PERMISSIONS.WORK_ORDERS_READ]}>
+              <Link
+                href="/work-orders"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive("/work-orders")
+                    ? "bg-blue-700 text-white"
+                    : "text-white hover:bg-blue-500"
+                }`}
+              >
+                Work Orders
+              </Link>
+            </PermissionGuard>
+            <PermissionGuard permissions={[PERMISSIONS.USERS_READ]}>
+              <Link
+                href="/admin/users"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive("/admin/users")
+                    ? "bg-blue-700 text-white"
+                    : "text-white hover:bg-blue-500"
+                }`}
+              >
+                Users
+              </Link>
+            </PermissionGuard>
             <div className="flex items-center space-x-3 ml-4 border-l border-blue-400 pl-4">
               <span className="text-sm font-medium truncate max-w-[120px]">
                 {session.user?.name || session.user?.email}
@@ -145,39 +166,58 @@ export default function Navbar() {
             >
               Dashboard
             </Link>
-            <Link
-              href="/sites"
-              className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
-                isActive("/sites")
-                  ? "bg-blue-700 text-white"
-                  : "text-white hover:bg-blue-500"
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Sites
-            </Link>
-            <Link
-              href="/assets"
-              className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
-                isActive("/assets")
-                  ? "bg-blue-700 text-white"
-                  : "text-white hover:bg-blue-500"
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Assets
-            </Link>
-            <Link
-              href="/work-orders"
-              className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
-                isActive("/work-orders")
-                  ? "bg-blue-700 text-white"
-                  : "text-white hover:bg-blue-500"
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Work Orders
-            </Link>
+            <PermissionGuard permissions={[PERMISSIONS.SITES_READ]}>
+              <Link
+                href="/sites"
+                className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
+                  isActive("/sites")
+                    ? "bg-blue-700 text-white"
+                    : "text-white hover:bg-blue-500"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Sites
+              </Link>
+            </PermissionGuard>
+            <PermissionGuard permissions={[PERMISSIONS.ASSETS_READ]}>
+              <Link
+                href="/assets"
+                className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
+                  isActive("/assets")
+                    ? "bg-blue-700 text-white"
+                    : "text-white hover:bg-blue-500"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Assets
+              </Link>
+            </PermissionGuard>
+            <PermissionGuard permissions={[PERMISSIONS.WORK_ORDERS_READ]}>
+              <Link
+                href="/work-orders"
+                className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
+                  isActive("/work-orders")
+                    ? "bg-blue-700 text-white"
+                    : "text-white hover:bg-blue-500"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Work Orders
+              </Link>
+            </PermissionGuard>
+            <PermissionGuard permissions={[PERMISSIONS.USERS_READ]}>
+              <Link
+                href="/admin/users"
+                className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
+                  isActive("/admin/users")
+                    ? "bg-blue-700 text-white"
+                    : "text-white hover:bg-blue-500"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Users
+              </Link>
+            </PermissionGuard>
             <div className="border-t border-blue-400 pt-3 mt-3">
               <div className="px-3 py-2 text-sm text-blue-100 truncate">
                 {session.user?.name || session.user?.email}

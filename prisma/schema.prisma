@@ -22,6 +22,7 @@ model User {
   requestedWorkOrders WorkOrder[]   @relation("RequestedWorkOrders")
   managedSites        Site[]        @relation("SiteManager")
   maintainedBuildings Building[]    @relation("FacilityTechnician")
+  userRoles           UserRole[]
 
   @@map("users")
 }
@@ -204,4 +205,61 @@ model ActivityLog {
   @@index([entityType, entityId])
   @@index([createdAt])
   @@map("activity_logs")
+}
+
+// RBAC Models
+model Role {
+  id            String      @id @default(cuid())
+  name          String      @unique
+  description   String?
+  isDefault     Boolean    @default(false)
+  isActive      Boolean    @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  userRoles     UserRole[]
+  rolePermissions RolePermission[]
+
+  @@map("roles")
+}
+
+model Permission {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  resource    String      // e.g., "sites", "users", "assets", "work_orders"
+  action      String      // e.g., "read", "write", "delete", "manage"
+  description String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model UserRole {
+  id            String      @id @default(cuid())
+  userId        String
+  roleId        String
+  assignedBy    String      // User ID of who assigned this role
+  assignedAt    DateTime    @default(now())
+  isActive      Boolean    @default(true)
+
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role          Role        @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  id           String      @id @default(cuid())
+  roleId       String
+  permissionId String
+
+  role         Role        @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission  @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
 }
