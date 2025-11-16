@@ -124,8 +124,8 @@ export default function WorkOrders() {
       }
     } else if (workOrder.asset.room) {
       return {
-        type: 'room',
-        name: `${workOrder.asset.building?.number || 'Unknown'}-${workOrder.asset.room.number}`,
+        type: 'room' as const,
+        name: `${workOrder.asset.building?.number || 'Unknown'}-${(workOrder.asset.room as any).number}`,
         data: workOrder.asset.room
       }
     } else {
@@ -634,7 +634,7 @@ function EnhancedWorkOrderForm({ onWorkOrderCreated, onCancel, assets }: Enhance
                       {asset.name} {asset.assetTag && `(${asset.assetTag})`}
                       {asset.site && ` - ${asset.site.name}`}
                       {asset.building && !asset.room && ` - ${asset.building.name}`}
-                      {asset.room && asset.building && ` - ${asset.building.number}-${asset.room.number}`}
+                      {asset.room && asset.building && ` - ${asset.building.number}-${(asset.room as any).number}`}
                     </option>
                   ))}
                 </select>

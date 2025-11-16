@@ -104,8 +104,8 @@ export default function ArchivedWorkOrders() {
       }
     } else if (workOrder.asset.room) {
       return {
-        type: 'room',
-        name: `${workOrder.asset.building?.number || 'Unknown'}-${workOrder.asset.room.number}`,
+        type: 'room' as const,
+        name: `${workOrder.asset.building?.number || 'Unknown'}-${(workOrder.asset.room as any).number}`,
         data: workOrder.asset.room
       }
     } else {

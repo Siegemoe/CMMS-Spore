@@ -72,25 +72,25 @@ export default function ArchivedAssets() {
   const getAssetLocation = (asset: Asset) => {
     if (asset.site) {
       return {
-        type: 'site',
+        type: 'site' as const,
         name: asset.site.name,
         data: asset.site
       }
     } else if (asset.building) {
       return {
-        type: 'building',
+        type: 'building' as const,
         name: asset.building.name,
         data: asset.building
       }
     } else if (asset.room) {
       return {
-        type: 'room',
-        name: `${asset.building?.number || 'Unknown'}-${asset.room.number}`,
+        type: 'room' as const,
+        name: `${asset.building?.number || 'Unknown'}-${(asset.room as any).number}`,
         data: asset.room
       }
     } else {
       return {
-        type: 'location',
+        type: 'location' as const,
         name: asset.location || 'Unknown Location',
         data: null
       }

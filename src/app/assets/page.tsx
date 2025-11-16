@@ -88,8 +88,8 @@ export default function Assets() {
       }
     } else if (asset.room) {
       return {
-        type: 'room',
-        name: `${asset.building?.number || 'Unknown'}-${asset.room.number}`,
+        type: 'room' as const,
+        name: `${asset.building?.number || 'Unknown'}-${(asset.room as any).number}`,
         data: asset.room
       }
     } else {
@@ -248,8 +248,8 @@ export default function Assets() {
                             <div className="flex items-center gap-1">
                               {asset.room && asset.building && (
                                 <>
-                                  <span className="font-medium">{asset.building.number}-{asset.room.number}</span>
-                                  {asset.room.floor && <span className="text-gray-400">Floor {asset.room.floor}</span>}
+                                  <span className="font-medium">{asset.building.number}-{(asset.room as any).number}</span>
+                                  {(asset.room as any).floor && <span className="text-gray-400">Floor {(asset.room as any).floor}</span>}
                                 </>
                               )}
                               {asset.building && !asset.room && (
