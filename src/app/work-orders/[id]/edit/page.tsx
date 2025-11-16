@@ -23,6 +23,7 @@ interface WorkOrder {
     name: string | null
     email: string
   } | null
+  assignedToId: string | null
   createdBy: {
     name: string | null
     email: string
@@ -158,7 +159,17 @@ export default function EditWorkOrder({ params }: { params: Promise<{ id: string
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     if (!workOrder) return
-    setWorkOrder({ ...workOrder, [e.target.name]: e.target.value })
+
+    const { name, value } = e.target
+    if (name === "assignedToId") {
+      // Handle the assignedToId separately
+      setWorkOrder({
+        ...workOrder,
+        assignedToId: value || null
+      })
+    } else {
+      setWorkOrder({ ...workOrder, [name]: value })
+    }
   }
 
   if (status === "loading" || loading) {

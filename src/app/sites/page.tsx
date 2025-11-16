@@ -389,6 +389,7 @@ function SiteForm({ onSiteCreated, onCancel }: SiteFormProps) {
 
         onSiteCreated(newSite)
         resetForm()
+        onCancel() // Close the form after successful creation
       } else {
         const data = await response.json()
         setError(data.error || "Failed to create site")

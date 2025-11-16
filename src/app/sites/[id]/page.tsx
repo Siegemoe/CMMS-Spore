@@ -77,12 +77,16 @@ export default function SiteDetails() {
   const params = useParams()
   const router = useRouter()
   const [site, setSite] = useState<Site | null>(null)
+  const [allRooms, setAllRooms] = useState<Room[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   useEffect(() => {
     if (isAuthenticated && params.id) {
       fetchSite()
+      fetchAllRooms()
     }
   }, [isAuthenticated, params.id])
 
@@ -102,6 +106,73 @@ export default function SiteDetails() {
       setError("Something went wrong")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchAllRooms = async () => {
+    try {
+      const response = await fetch(`/api/rooms?siteId=${params.id}&limit=100`)
+      if (response.ok) {
+        const data = await response.json()
+        setAllRooms(data.data || [])
+      }
+    } catch (error) {
+      console.error("Failed to fetch rooms:", error)
+      setAllRooms([])
+    }
+  }
+
+  const handleArchive = async () => {
+    if (!site) return
+    setActionLoading('archive')
+
+    try {
+      const newStatus = site.status === 'ARCHIVED' ? 'ACTIVE' : 'ARCHIVED'
+      const response = await fetch(`/api/sites/${site.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (response.ok) {
+        const updatedSite = await response.json()
+        setSite(updatedSite)
+      } else {
+        const data = await response.json()
+        setError(data.error || `Failed to ${newStatus === 'ARCHIVED' ? 'archive' : 'unarchive'} site`)
+      }
+    } catch (error) {
+      console.error('Failed to update site status:', error)
+      setError('Something went wrong')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!site) return
+    setActionLoading('delete')
+
+    try {
+      const response = await fetch(`/api/sites/${site.id}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        router.push('/sites')
+      } else {
+        const data = await response.json()
+        setError(data.error || 'Failed to delete site')
+        setShowDeleteConfirm(false)
+      }
+    } catch (error) {
+      console.error('Failed to delete site:', error)
+      setError('Something went wrong')
+      setShowDeleteConfirm(false)
+    } finally {
+      setActionLoading(null)
     }
   }
 
@@ -157,8 +228,7 @@ export default function SiteDetails() {
     )
   }
 
-  const allRooms: any[] = [] // TODO: Implement room fetching when needed
-
+  
   return (
     <div className="min-h-screen gradient-bg-subtle">
       <Navbar />
@@ -283,8 +353,8 @@ export default function SiteDetails() {
                 </Card>
               )}
 
-              {/* Room Overview - TODO: Implement room fetching when needed */}
-              {/* {allRooms.length > 0 && ( */}
+              {/* Room Overview */}
+              {allRooms.length > 0 && (
                 <Card variant="elevated">
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -330,7 +400,7 @@ export default function SiteDetails() {
                     </div>
                   </CardContent>
                 </Card>
-              {/* )} */}
+              )}
             </div>
 
             {/* Sidebar */}
@@ -392,6 +462,32 @@ export default function SiteDetails() {
                     >
                       Edit Site Details
                     </Link>
+
+                    <button
+                      onClick={handleArchive}
+                      disabled={actionLoading === 'archive'}
+                      className={`w-full font-medium py-2 px-4 rounded text-sm transition-colors touch-manipulation ${
+                        site.status === 'ARCHIVED'
+                          ? 'bg-green-600 hover:bg-green-700 text-white'
+                          : 'bg-orange-600 hover:bg-orange-700 text-white'
+                      } ${actionLoading === 'archive' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      {actionLoading === 'archive'
+                        ? (site.status === 'ARCHIVED' ? 'Unarchiving...' : 'Archiving...')
+                        : (site.status === 'ARCHIVED' ? 'Unarchive Site' : 'Archive Site')
+                      }
+                    </button>
+
+                    {site._count.buildings === 0 && site._count.assets === 0 && (
+                      <button
+                        onClick={() => setShowDeleteConfirm(true)}
+                        disabled={actionLoading === 'delete'}
+                        className="w-full bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Delete Site
+                      </button>
+                    )}
+
                     <Button
                       variant="secondary"
                       className="w-full"
@@ -402,6 +498,53 @@ export default function SiteDetails() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Delete Confirmation Modal */}
+              {showDeleteConfirm && (
+                <div className="fixed inset-0 z-50 overflow-y-auto">
+                  <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onClick={() => setShowDeleteConfirm(false)}></div>
+                    <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                      <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div className="sm:flex sm:items-start">
+                          <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.502 0L4.232 15.5c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                          </div>
+                          <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 className="text-lg leading-6 font-medium text-gray-900">
+                              Delete Site
+                            </h3>
+                            <div className="mt-2">
+                              <p className="text-sm text-gray-500">
+                                Are you sure you want to delete "{site.name}"? This action cannot be undone.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button
+                          type="button"
+                          onClick={handleDelete}
+                          disabled={actionLoading === 'delete'}
+                          className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {actionLoading === 'delete' ? 'Deleting...' : 'Delete'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowDeleteConfirm(false)}
+                          className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

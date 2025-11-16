@@ -94,6 +94,23 @@ export default function BuildingForm({ building, onBuildingSaved, onCancel }: Bu
     setLoading(true)
 
     try {
+      // Validate required fields before submission
+      if (!formData.name.trim()) {
+        setError("Building name is required")
+        setLoading(false)
+        return
+      }
+      if (!formData.number.trim()) {
+        setError("Building number is required")
+        setLoading(false)
+        return
+      }
+      if (!formData.siteId) {
+        setError("Site is required")
+        setLoading(false)
+        return
+      }
+
       const submitData = {
         ...formData,
         floors: formData.floors ? parseInt(formData.floors) : null,

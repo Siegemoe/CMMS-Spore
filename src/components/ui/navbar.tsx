@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { useAuthorization, PermissionGuard } from "@/hooks/useAuthorization"
 import { PERMISSIONS } from "@/lib/authorization"
+import UserProfileDropdown from "@/components/ui/UserProfileDropdown"
 
 export default function Navbar() {
   const { data: session } = useSession()
@@ -115,26 +116,6 @@ export default function Navbar() {
               </Link>
             </PermissionGuard>
             <Link
-              href="/connect"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive("/connect")
-                  ? "bg-blue-700 text-white"
-                  : "text-white hover:bg-blue-500"
-              }`}
-            >
-              Connect
-            </Link>
-            <Link
-              href="/settings/profile"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActive("/settings")
-                  ? "bg-blue-700 text-white"
-                  : "text-white hover:bg-blue-500"
-              }`}
-            >
-              Settings
-            </Link>
-            <Link
               href="/smac"
               className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 isActive("/smac")
@@ -145,16 +126,8 @@ export default function Navbar() {
             >
               SMAC
             </Link>
-            <div className="flex items-center space-x-3 ml-4 border-l border-blue-400 pl-4">
-              <span className="text-sm font-medium truncate max-w-[120px]">
-                {session.user?.name || session.user?.email}
-              </span>
-              <button
-                onClick={() => signOut({ callbackUrl: "/auth/signin" })}
-                className="bg-blue-700 hover:bg-blue-800 px-4 py-2 rounded-md text-sm font-medium transition-colors"
-              >
-                Sign Out
-              </button>
+            <div className="ml-4">
+              <UserProfileDropdown />
             </div>
           </div>
 
@@ -300,28 +273,6 @@ export default function Navbar() {
               </Link>
             </PermissionGuard>
             <Link
-              href="/connect"
-              className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
-                isActive("/connect")
-                  ? "bg-blue-700 text-white"
-                  : "text-white hover:bg-blue-500"
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Connect
-            </Link>
-            <Link
-              href="/settings/profile"
-              className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
-                isActive("/settings")
-                  ? "bg-blue-700 text-white"
-                  : "text-white hover:bg-blue-500"
-              }`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Settings
-            </Link>
-            <Link
               href="/smac"
               className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
                 isActive("/smac")
@@ -334,18 +285,12 @@ export default function Navbar() {
               SMAC
             </Link>
             <div className="border-t border-blue-400 pt-3 mt-3">
-              <div className="px-3 py-2 text-sm text-blue-100 truncate">
-                {session.user?.name || session.user?.email}
+              <div className="px-3 py-2 text-sm text-blue-100">
+                Profile & Settings
               </div>
-              <button
-                onClick={() => {
-                  signOut({ callbackUrl: "/auth/signin" })
-                  setIsMenuOpen(false)
-                }}
-                className="w-full text-left px-3 py-3 bg-blue-700 hover:bg-blue-800 rounded-md text-base font-medium transition-colors"
-              >
-                Sign Out
-              </button>
+              <div className="px-3 py-2 bg-blue-700 rounded-md">
+                <UserProfileDropdown />
+              </div>
             </div>
           </div>
         </div>

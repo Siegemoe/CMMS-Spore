@@ -168,86 +168,117 @@ export default function Buildings() {
             </div>
           </div>
 
-          {/* Buildings Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {buildings.length === 0 ? (
-              <div className="col-span-full text-center py-12">
-                <div className="text-gray-500">
-                  <div className="text-6xl mb-4">🏢</div>
-                  <h3 className="text-lg font-medium mb-2">No buildings found</h3>
-                  <p>Create your first building to get started with facilities management.</p>
-                </div>
+          {/* Buildings Grouped by Site */}
+          {buildings.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-gray-500">
+                <div className="text-6xl mb-4">🏢</div>
+                <h3 className="text-lg font-medium mb-2">No buildings found</h3>
+                <p>Create your first building to get started with facilities management.</p>
               </div>
-            ) : (
-              buildings.map((building) => (
-                <div key={building.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                  <div className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">{building.name}</h3>
-                        <p className="text-sm text-gray-600 mb-2">Building {building.number}</p>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(building.status)}`}>
-                          {getStatusText(building.status)}
-                        </span>
-                      </div>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {Object.entries(
+                buildings.reduce((groups, building) => {
+                  const siteName = building.site.name
+                  if (!groups[siteName]) {
+                    groups[siteName] = {
+                      site: building.site,
+                      buildings: []
+                    }
+                  }
+                  groups[siteName].buildings.push(building)
+                  return groups
+                }, {} as Record<string, { site: { id: string; name: string }; buildings: Building[] }>)
+              ).map(([siteName, siteData]) => (
+                <div key={siteData.site.id} className="space-y-4">
+                  {/* Site Header */}
+                  <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                    <div className="flex items-center gap-3">
+                      <h2 className="text-xl font-semibold text-gray-900">{siteName}</h2>
+                      <span className="text-sm text-gray-500">
+                        {siteData.buildings.length} building{siteData.buildings.length !== 1 ? 's' : ''}
+                      </span>
                     </div>
+                    <Link
+                      href={`/sites/${siteData.site.id}`}
+                      className="text-sm text-blue-600 hover:text-blue-800"
+                    >
+                      View Site →
+                    </Link>
+                  </div>
 
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center text-sm text-gray-600">
-                        <span className="mr-2">📍</span>
-                        <span>{building.site.name}</span>
-                      </div>
-                      {building.floors && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-500">Floors:</span>
-                          <span className="font-medium">{building.floors}</span>
+                  {/* Buildings Grid for this Site */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {siteData.buildings.map((building) => (
+                      <div key={building.id} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                        <div className="p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex-1">
+                              <h3 className="text-lg font-semibold text-gray-900 mb-1">{building.name}</h3>
+                              <p className="text-sm text-gray-600 mb-2">Building {building.number}</p>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(building.status)}`}>
+                                {getStatusText(building.status)}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2 mb-4">
+                            {building.floors && (
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-500">Floors:</span>
+                                <span className="font-medium">{building.floors}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {building.description && (
+                            <p className="text-sm text-gray-600 mb-4 line-clamp-2">{building.description}</p>
+                          )}
+
+                          <div className="space-y-2 mb-4">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-500">Rooms:</span>
+                              <span className="font-medium">{building._count.rooms}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-500">Assets:</span>
+                              <span className="font-medium">{building._count.assets}</span>
+                            </div>
+                          </div>
+
+                          {building.facilityTechnician && (
+                            <div className="mb-4 p-3 bg-gray-50 rounded-md">
+                              <p className="text-xs text-gray-500 mb-1">Facility Technician</p>
+                              <p className="text-sm font-medium text-gray-900">
+                                {building.facilityTechnician.name || building.facilityTechnician.email}
+                              </p>
+                            </div>
+                          )}
+
+                          <div className="flex gap-2">
+                            <Link
+                              href={`/buildings/${building.id}`}
+                              className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors touch-manipulation"
+                            >
+                              View Details
+                            </Link>
+                            <Link
+                              href={`/buildings/${building.id}/edit`}
+                              className="flex-1 text-center bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors touch-manipulation"
+                            >
+                              Edit
+                            </Link>
+                          </div>
                         </div>
-                      )}
-                    </div>
-
-                    {building.description && (
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">{building.description}</p>
-                    )}
-
-                    <div className="space-y-2 mb-4">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-500">Rooms:</span>
-                        <span className="font-medium">{building._count.rooms}</span>
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-500">Assets:</span>
-                        <span className="font-medium">{building._count.assets}</span>
-                      </div>
-                    </div>
-
-                    {building.facilityTechnician && (
-                      <div className="mb-4 p-3 bg-gray-50 rounded-md">
-                        <p className="text-xs text-gray-500 mb-1">Facility Technician</p>
-                        <p className="text-sm font-medium text-gray-900">
-                          {building.facilityTechnician.name || building.facilityTechnician.email}
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="flex gap-2">
-                      <Link
-                        href={`/buildings/${building.id}`}
-                        className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors touch-manipulation"
-                      >
-                        View Details
-                      </Link>
-                      <Link
-                        href={`/buildings/${building.id}/edit`}
-                        className="flex-1 text-center bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded text-sm transition-colors touch-manipulation"
-                      >
-                        Edit
-                      </Link>
-                    </div>
+                    ))}
                   </div>
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -5,6 +5,10 @@ import { authOptions } from '@/lib/auth'
 import { updateSiteSchema, validateRequest } from '@/lib/validation'
 import { z } from 'zod'
 
+const archiveSiteSchema = z.object({
+  status: z.enum(['ACTIVE', 'INACTIVE', 'ARCHIVED'])
+})
+
 interface Params {
   params: Promise<{ id: string }>
 }
@@ -201,6 +205,70 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     console.error('Failed to delete site:', error)
     return NextResponse.json(
       { error: 'Failed to delete site' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function PATCH(request: NextRequest, { params }: Params) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { id } = await params
+    const body = await request.json()
+
+    const validation = validateRequest(archiveSiteSchema, body)
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: validation.errors },
+        { status: 400 }
+      )
+    }
+
+    // Check if site exists
+    const existingSite = await prisma.site.findUnique({
+      where: { id }
+    })
+
+    if (!existingSite) {
+      return NextResponse.json({ error: 'Site not found' }, { status: 404 })
+    }
+
+    const updatedSite = await prisma.site.update({
+      where: { id },
+      data: { status: validation.data!.status },
+      include: {
+        siteManager: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          }
+        }
+      }
+    })
+
+    const action = validation.data!.status === 'ARCHIVED' ? 'archived' :
+                   validation.data!.status === 'ACTIVE' ? 'unarchived' : 'updated'
+
+    console.log(`Site ${action} successfully (activity logging disabled):`, updatedSite.name)
+
+    return NextResponse.json(updatedSite)
+  } catch (error) {
+    console.error('Failed to update site status:', error)
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: error.issues },
+        { status: 400 }
+      )
+    }
+
+    return NextResponse.json(
+      { error: 'Failed to update site status' },
       { status: 500 }
     )
   }
