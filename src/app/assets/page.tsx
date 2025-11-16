@@ -20,6 +20,24 @@ interface Asset {
   warrantyEnd: string | null
   createdAt: string
   updatedAt: string
+  site: {
+    id: string
+    name: string
+    address: string | null
+  } | null
+  building: {
+    id: string
+    name: string
+    number: string
+  } | null
+  room: {
+    id: string
+    number: string
+    floor: number | null
+  } | null
+  _count: {
+    workOrders: number
+  }
 }
 
 export default function Assets() {
@@ -52,6 +70,34 @@ export default function Assets() {
       console.error("Failed to fetch assets:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const getAssetLocation = (asset: Asset) => {
+    if (asset.site) {
+      return {
+        type: 'site',
+        name: asset.site.name,
+        data: asset.site
+      }
+    } else if (asset.building) {
+      return {
+        type: 'building',
+        name: asset.building.name,
+        data: asset.building
+      }
+    } else if (asset.room) {
+      return {
+        type: 'room',
+        name: `${asset.building?.number || 'Unknown'}-${asset.room.number}`,
+        data: asset.room
+      }
+    } else {
+      return {
+        type: 'location',
+        name: asset.location || 'Unknown Location',
+        data: null
+      }
     }
   }
 
@@ -120,115 +166,138 @@ export default function Assets() {
 
           {showForm && <AssetForm onAssetCreated={fetchAssets} onCancel={() => setShowForm(false)} />}
 
-          <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <ul className="divide-y divide-gray-200">
-              {assets.length === 0 ? (
-                <li className="px-4 sm:px-6 py-8 text-center text-gray-500">
-                  No assets found. Create your first asset to get started.
-                </li>
-              ) : (
-                assets.map((asset) => (
-                  <li key={asset.id} className="hover:bg-gray-50 transition-colors">
-                    <div className="px-4 sm:px-6 py-4">
-                      {/* Mobile Card Layout */}
-                      <div className="sm:hidden">
-                        <div className="flex flex-col space-y-3">
-                          <div className="flex items-start justify-between">
-                            <h3 className="text-base font-medium text-blue-600 flex-1 pr-2">
-                              {asset.name}
-                            </h3>
-                            <div className="flex flex-col space-y-2 flex-shrink-0">
-                              <Link
-                                href={`/assets/${asset.id}/edit`}
-                                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded text-sm touch-manipulation transition-colors"
-                              >
-                                Edit
-                              </Link>
-                              <button
-                                onClick={() => handleArchive(asset.id)}
-                                disabled={actionLoading === asset.id}
-                                className="bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 text-white font-medium py-2 px-3 rounded text-sm touch-manipulation transition-colors"
-                              >
-                                {actionLoading === asset.id ? "Archiving..." : "Archive"}
-                              </button>
-                            </div>
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {asset.assetTag && (
-                              <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
-                                {asset.assetTag}
-                              </span>
-                            )}
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(asset.category)}`}>
-                              {asset.category}
-                            </span>
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(asset.status)}`}>
-                              {asset.status}
-                            </span>
-                          </div>
-                          <div className="text-sm text-gray-600 space-y-1">
-                            <p>📍 {asset.location}</p>
-                            {asset.description && (
-                              <p className="text-xs text-gray-500 line-clamp-2">{asset.description}</p>
-                            )}
-                          </div>
+          {/* Assets Grouped by Location */}
+          {assets.length === 0 ? (
+            <div className="bg-white shadow rounded-lg text-center py-12">
+              <div className="text-gray-500">
+                <div className="text-6xl mb-4">📦</div>
+                <h3 className="text-lg font-medium mb-2">No assets found</h3>
+                <p>Create your first asset to get started with equipment management.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {Object.entries(
+                assets.reduce((groups, asset) => {
+                  const location = getAssetLocation(asset)
+                  if (!groups[location.name]) {
+                    groups[location.name] = {
+                      type: location.type,
+                      name: location.name,
+                      data: location.data,
+                      assets: []
+                    }
+                  }
+                  groups[location.name].assets.push(asset)
+                  return groups
+                }, {} as Record<string, { type: string; name: string; data: any; assets: Asset[] }>)
+              ).map(([locationName, locationData]) => (
+                <div key={locationName} className="bg-white shadow rounded-lg overflow-hidden">
+                  {/* Location Header */}
+                  <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="text-2xl">
+                          {locationData.type === 'site' && '🏢'}
+                          {locationData.type === 'building' && '🏗️'}
+                          {locationData.type === 'room' && '🚪'}
+                          {locationData.type === 'location' && '📍'}
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">{locationName}</h3>
+                          <p className="text-sm text-gray-500">
+                            {locationData.type === 'site' && 'Site'}
+                            {locationData.type === 'building' && 'Building'}
+                            {locationData.type === 'room' && 'Room'}
+                            {locationData.type === 'location' && 'Location'}
+                          </p>
                         </div>
                       </div>
+                      <span className="text-sm font-medium text-gray-600 bg-white px-3 py-1 rounded-full border border-gray-300">
+                        {locationData.assets.length} asset{locationData.assets.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  </div>
 
-                      {/* Desktop Row Layout */}
-                      <div className="hidden sm:flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center">
-                            <p className="text-sm font-medium text-blue-600 truncate">
-                              {asset.name}
-                            </p>
-                            {asset.assetTag && (
-                              <span className="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                {asset.assetTag}
+                  {/* Assets Grid */}
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {locationData.assets.map((asset) => (
+                        <div key={asset.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-base font-medium text-gray-900 truncate">{asset.name}</h4>
+                              {asset.assetTag && (
+                                <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800 mt-1">
+                                  {asset.assetTag}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-1 ml-2">
+                              <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(asset.category)}`}>
+                                {asset.category}
                               </span>
-                            )}
-                            <span className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getCategoryColor(asset.category)}`}>
-                              {asset.category}
-                            </span>
-                            <span className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(asset.status)}`}>
-                              {asset.status}
-                            </span>
+                              <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(asset.status)}`}>
+                                {asset.status}
+                              </span>
+                            </div>
                           </div>
-                          <div className="mt-2 sm:flex sm:justify-between">
-                            <div className="sm:flex">
-                              <p className="flex items-center text-sm text-gray-500">
-                                Location: {asset.location}
-                              </p>
-                              {asset.description && (
-                                <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                                  {asset.description}
-                                </p>
+
+                          {/* Location Details */}
+                          <div className="flex items-center text-sm text-gray-600 mb-2">
+                            <div className="flex items-center gap-1">
+                              {asset.room && asset.building && (
+                                <>
+                                  <span className="font-medium">{asset.building.number}-{asset.room.number}</span>
+                                  {asset.room.floor && <span className="text-gray-400">Floor {asset.room.floor}</span>}
+                                </>
+                              )}
+                              {asset.building && !asset.room && (
+                                <span className="font-medium">{asset.building.name}</span>
+                              )}
+                              {asset.site && (
+                                <span className="text-gray-400">• {asset.site.name}</span>
                               )}
                             </div>
                           </div>
+
+                          {/* Asset Details */}
+                          {asset.description && (
+                            <p className="text-sm text-gray-600 mb-3 line-clamp-2">{asset.description}</p>
+                          )}
+
+                          {/* Stats */}
+                          <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                            <span>Work Orders: {asset._count.workOrders}</span>
+                            {asset.purchaseCost && (
+                              <span>Cost: ${asset.purchaseCost.toLocaleString()}</span>
+                            )}
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex gap-2">
+                            <Link
+                              href={`/assets/${asset.id}/edit`}
+                              className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded text-sm transition-colors touch-manipulation"
+                            >
+                              Edit
+                            </Link>
+                            <button
+                              onClick={() => handleArchive(asset.id)}
+                              disabled={actionLoading === asset.id}
+                              className="bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 text-white font-medium py-2 px-3 rounded text-sm touch-manipulation transition-colors"
+                            >
+                              {actionLoading === asset.id ? "Archiving..." : "Archive"}
+                            </button>
+                          </div>
                         </div>
-                        <div className="ml-5 flex-shrink-0 flex items-center space-x-2">
-                          <Link
-                            href={`/assets/${asset.id}/edit`}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded text-sm touch-manipulation transition-colors"
-                          >
-                            Edit
-                          </Link>
-                          <button
-                            onClick={() => handleArchive(asset.id)}
-                            disabled={actionLoading === asset.id}
-                            className="bg-yellow-600 hover:bg-yellow-700 disabled:opacity-50 text-white font-medium py-2 px-4 rounded text-sm touch-manipulation transition-colors"
-                          >
-                            {actionLoading === asset.id ? "Archiving..." : "Archive"}
-                          </button>
-                        </div>
-                      </div>
+                      ))}
                     </div>
-                  </li>
-                ))
-              )}
-            </ul>
-          </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

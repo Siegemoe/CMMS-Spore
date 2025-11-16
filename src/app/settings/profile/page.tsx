@@ -11,15 +11,34 @@ export default function ProfileSettings() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
   })
 
   useEffect(() => {
-    if (session?.user) {
-      setFormData({
-        name: session.user.name || "",
-        email: session.user.email || "",
-      })
+    const fetchUserProfile = async () => {
+      if (session?.user) {
+        try {
+          const response = await fetch("/api/user/profile")
+          if (response.ok) {
+            const userData = await response.json()
+            setFormData({
+              name: userData.name || "",
+              email: userData.email || "",
+              phone: userData.phone || "",
+            })
+          }
+        } catch (error) {
+          console.error("Failed to fetch user profile:", error)
+          // Fallback to session data
+          setFormData({
+            name: session.user.name || "",
+            email: session.user.email || "",
+            phone: "",
+          })
+        }
+      }
     }
+    fetchUserProfile()
   }, [session])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -115,6 +134,22 @@ export default function ProfileSettings() {
                 disabled
               />
               <p className="mt-1 text-xs text-gray-500">Email cannot be changed through settings</p>
+            </div>
+
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-200 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Enter your phone number"
+              />
+              <p className="mt-1 text-xs text-gray-500">For contact and notification purposes</p>
             </div>
           </div>
         </div>

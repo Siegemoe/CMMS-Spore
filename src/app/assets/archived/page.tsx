@@ -1,10 +1,10 @@
 "use client"
 
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
 import Link from "next/link"
+import { useEffect, useState } from "react"
 import Navbar from "@/components/ui/navbar"
+import { Loading } from "@/components/shared"
+import { useAuthRedirect, useStatusColors, useCategoryColors } from "@/hooks"
 
 interface Asset {
   id: string
@@ -19,34 +19,46 @@ interface Asset {
   warrantyEnd: string | null
   createdAt: string
   updatedAt: string
+  site: {
+    id: string
+    name: string
+    address: string | null
+  } | null
+  building: {
+    id: string
+    name: string
+    number: string
+  } | null
+  room: {
+    id: string
+    number: string
+    floor: number | null
+  } | null
   _count: {
     workOrders: number
   }
 }
 
 export default function ArchivedAssets() {
-  const { data: session, status } = useSession()
-  const router = useRouter()
+  const { session, isLoading, isAuthenticated } = useAuthRedirect()
+  const { getStatusColor } = useStatusColors()
+  const { getCategoryColor } = useCategoryColors()
   const [assets, setAssets] = useState<Asset[]>([])
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/signin")
+    if (isAuthenticated) {
+      fetchArchivedAssets()
     }
-  }, [status, router])
-
-  useEffect(() => {
-    fetchArchivedAssets()
-  }, [])
+  }, [isAuthenticated])
 
   const fetchArchivedAssets = async () => {
     try {
-      const response = await fetch("/api/assets?status=ARCHIVED")
+      const response = await fetch("/api/assets")
       if (response.ok) {
         const data = await response.json()
-        // Filter only archived assets (in case the API doesn't support status filter yet)
+        // Filter to only show archived assets
         const archivedAssets = data.filter((asset: Asset) => asset.status === "ARCHIVED")
         setAssets(archivedAssets)
       }
@@ -54,6 +66,34 @@ export default function ArchivedAssets() {
       console.error("Failed to fetch archived assets:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const getAssetLocation = (asset: Asset) => {
+    if (asset.site) {
+      return {
+        type: 'site',
+        name: asset.site.name,
+        data: asset.site
+      }
+    } else if (asset.building) {
+      return {
+        type: 'building',
+        name: asset.building.name,
+        data: asset.building
+      }
+    } else if (asset.room) {
+      return {
+        type: 'room',
+        name: `${asset.building?.number || 'Unknown'}-${asset.room.number}`,
+        data: asset.room
+      }
+    } else {
+      return {
+        type: 'location',
+        name: asset.location || 'Unknown Location',
+        data: null
+      }
     }
   }
 
@@ -65,7 +105,7 @@ export default function ArchivedAssets() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: "ACTIVE" }),
+        body: JSON.stringify({ status: "ACTIVE" }), // Unarchive by setting status to ACTIVE
       })
 
       if (response.ok) {
@@ -83,7 +123,7 @@ export default function ArchivedAssets() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to permanently delete this asset? This action cannot be undone.")) {
+    if (!confirm("Are you sure you want to delete this archived asset? This action cannot be undone.")) {
       return
     }
 
@@ -100,128 +140,175 @@ export default function ArchivedAssets() {
         alert(data.error || "Failed to delete asset")
       }
     } catch (error) {
-      console.error("Failed to delete asset:", error)
-      alert("Failed to delete asset")
+      alert("Something went wrong")
     } finally {
       setActionLoading(null)
     }
   }
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case "equipment":
-        return "bg-blue-100 text-blue-800"
-      case "vehicle":
-        return "bg-green-100 text-green-800"
-      case "building":
-        return "bg-yellow-100 text-yellow-800"
-      case "tool":
-        return "bg-purple-100 text-purple-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
+  if (isLoading || loading) {
+    return <Loading />
   }
 
-  if (status === "loading" || loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    )
-  }
-
-  if (!session) {
+  if (!isAuthenticated) {
     return null
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="mb-8">
-            <Link href="/assets" className="text-blue-600 hover:text-blue-800 mb-4 inline-block">
-              ← Back to Assets
-            </Link>
-            <div className="flex justify-between items-center">
+      <div className="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8 relative z-base">
+        <div className="px-0 py-4 sm:py-6 sm:px-0">
+          <div className="mb-6 sm:mb-8">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Archived Assets</h1>
-                <p className="mt-2 text-gray-600">View and manage archived assets</p>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Archived Assets</h1>
+                <p className="mt-2 text-sm sm:text-base text-gray-600">View and restore archived equipment and facilities</p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-3">
+                <Link
+                  href="/assets"
+                  className="w-full sm:w-auto bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 sm:py-2 px-4 rounded text-base sm:text-base touch-manipulation transition-colors"
+                >
+                  Back to Active
+                </Link>
               </div>
             </div>
           </div>
 
-          <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            {assets.length === 0 ? (
-              <div className="px-6 py-12 text-center">
-                <div className="text-gray-400 mb-2">
-                  <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-1">No archived assets</h3>
-                <p className="text-gray-500">Assets that you archive will appear here.</p>
+          {/* Archived Assets Grouped by Location */}
+          {assets.length === 0 ? (
+            <div className="bg-white shadow rounded-lg text-center py-12">
+              <div className="text-gray-500">
+                <div className="text-6xl mb-4">📁</div>
+                <h3 className="text-lg font-medium mb-2">No archived assets found</h3>
+                <p>Archived assets will appear here for reference and restoration.</p>
               </div>
-            ) : (
-              <ul className="divide-y divide-gray-200">
-                {assets.map((asset) => (
-                  <li key={asset.id} className="hover:bg-gray-50">
-                    <div className="px-6 py-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center">
-                            <p className="text-sm font-medium text-gray-900 truncate">
-                              {asset.name}
-                            </p>
-                            {asset.assetTag && (
-                              <span className="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                {asset.assetTag}
-                              </span>
-                            )}
-                            <span className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getCategoryColor(asset.category)}`}>
-                              {asset.category}
-                            </span>
-                          </div>
-                          <div className="mt-2 sm:flex sm:justify-between">
-                            <div className="sm:flex">
-                              <p className="flex items-center text-sm text-gray-500">
-                                Location: {asset.location}
-                              </p>
-                              {asset.description && (
-                                <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
-                                  {asset.description}
-                                </p>
-                              )}
-                            </div>
-                            <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                              <span>Work Orders: {asset._count.workOrders}</span>
-                            </div>
-                          </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {Object.entries(
+                assets.reduce((groups, asset) => {
+                  const location = getAssetLocation(asset)
+                  if (!groups[location.name]) {
+                    groups[location.name] = {
+                      type: location.type,
+                      name: location.name,
+                      data: location.data,
+                      assets: []
+                    }
+                  }
+                  groups[location.name].assets.push(asset)
+                  return groups
+                }, {} as Record<string, { type: string; name: string; data: any; assets: Asset[] }>)
+              ).map(([locationName, locationData]) => (
+                <div key={locationName} className="bg-white shadow rounded-lg overflow-hidden">
+                  {/* Location Header */}
+                  <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="text-2xl">
+                          {locationData.type === 'site' && '🏢'}
+                          {locationData.type === 'building' && '🏗️'}
+                          {locationData.type === 'room' && '🚪'}
+                          {locationData.type === 'location' && '📍'}
                         </div>
-                        <div className="ml-5 flex-shrink-0 flex items-center space-x-2">
-                          <button
-                            onClick={() => handleUnarchive(asset.id)}
-                            disabled={actionLoading === asset.id}
-                            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold py-2 px-4 rounded text-sm"
-                          >
-                            {actionLoading === asset.id ? "Restoring..." : "Unarchive"}
-                          </button>
-                          <button
-                            onClick={() => handleDelete(asset.id)}
-                            disabled={actionLoading === asset.id || asset._count.workOrders > 0}
-                            className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold py-2 px-4 rounded text-sm"
-                            title={asset._count.workOrders > 0 ? "Cannot delete asset with associated work orders" : "Delete asset"}
-                          >
-                            Delete
-                          </button>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">{locationName}</h3>
+                          <p className="text-sm text-gray-500">
+                            {locationData.type === 'site' && 'Site'}
+                            {locationData.type === 'building' && 'Building'}
+                            {locationData.type === 'room' && 'Room'}
+                            {locationData.type === 'location' && 'Location'}
+                          </p>
                         </div>
                       </div>
+                      <span className="text-sm font-medium text-gray-600 bg-white px-3 py-1 rounded-full border border-gray-300">
+                        {locationData.assets.length} archived asset{locationData.assets.length !== 1 ? 's' : ''}
+                      </span>
                     </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+                  </div>
+
+                  {/* Assets Grid */}
+                  <div className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {locationData.assets.map((asset) => (
+                        <div key={asset.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow opacity-75">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-base font-medium text-gray-900 truncate">{asset.name}</h4>
+                              {asset.assetTag && (
+                                <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800 mt-1">
+                                  {asset.assetTag}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-1 ml-2">
+                              <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(asset.category)}`}>
+                                {asset.category}
+                              </span>
+                              <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(asset.status)}`}>
+                                {asset.status}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Location Details */}
+                          <div className="flex items-center text-sm text-gray-600 mb-2">
+                            <div className="flex items-center gap-1">
+                              {asset.room && asset.building && (
+                                <>
+                                  <span className="font-medium">{asset.building.number}-{asset.room.number}</span>
+                                  {asset.room.floor && <span className="text-gray-400">Floor {asset.room.floor}</span>}
+                                </>
+                              )}
+                              {asset.building && !asset.room && (
+                                <span className="font-medium">{asset.building.name}</span>
+                              )}
+                              {asset.site && (
+                                <span className="text-gray-400">• {asset.site.name}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Asset Details */}
+                          {asset.description && (
+                            <p className="text-sm text-gray-600 mb-3 line-clamp-2">{asset.description}</p>
+                          )}
+
+                          {/* Stats */}
+                          <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                            <span>Work Orders: {asset._count.workOrders}</span>
+                            {asset.purchaseCost && (
+                              <span>Cost: ${asset.purchaseCost.toLocaleString()}</span>
+                            )}
+                          </div>
+
+                          {/* Actions */}
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleUnarchive(asset.id)}
+                              disabled={actionLoading === asset.id}
+                              className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-medium py-2 px-3 rounded text-sm touch-manipulation transition-colors"
+                            >
+                              {actionLoading === asset.id ? "Restoring..." : "Restore"}
+                            </button>
+                            <button
+                              onClick={() => handleDelete(asset.id)}
+                              disabled={actionLoading === asset.id}
+                              className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-medium py-2 px-3 rounded text-sm touch-manipulation transition-colors"
+                            >
+                              {actionLoading === asset.id ? "Deleting..." : "Delete"}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

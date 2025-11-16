@@ -17,6 +17,21 @@ interface WorkOrder {
   asset: {
     name: string
     assetTag: string | null
+    site: {
+      id: string
+      name: string
+      address: string | null
+    } | null
+    building: {
+      id: string
+      name: string
+      number: string
+    } | null
+    room: {
+      id: string
+      number: string
+      floor: number | null
+    } | null
   }
   assignedTo: {
     name: string | null
@@ -70,7 +85,9 @@ export default function WorkOrders() {
       const response = await fetch("/api/work-orders")
       if (response.ok) {
         const data = await response.json()
-        setWorkOrders(data)
+        // Filter out archived work orders from main view
+        const activeWorkOrders = data.filter((workOrder: WorkOrder) => workOrder.status !== "ARCHIVED")
+        setWorkOrders(activeWorkOrders)
       }
     } catch (error) {
       console.error("Failed to fetch work orders:", error)
@@ -88,6 +105,35 @@ export default function WorkOrders() {
       }
     } catch (error) {
       console.error("Failed to fetch assets:", error)
+    }
+  }
+
+  const getWorkOrderLocation = (workOrder: WorkOrder) => {
+    // Get location from the work order's asset
+    if (workOrder.asset.site) {
+      return {
+        type: 'site',
+        name: workOrder.asset.site.name,
+        data: workOrder.asset.site
+      }
+    } else if (workOrder.asset.building) {
+      return {
+        type: 'building',
+        name: workOrder.asset.building.name,
+        data: workOrder.asset.building
+      }
+    } else if (workOrder.asset.room) {
+      return {
+        type: 'room',
+        name: `${workOrder.asset.building?.number || 'Unknown'}-${workOrder.asset.room.number}`,
+        data: workOrder.asset.room
+      }
+    } else {
+      return {
+        type: 'location',
+        name: workOrder.assetLocation || workOrder.roomLocation || workOrder.siteLocation || 'Unknown Location',
+        data: null
+      }
     }
   }
 
@@ -154,180 +200,259 @@ export default function WorkOrders() {
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Work Orders</h1>
                 <p className="mt-2 text-sm sm:text-base text-gray-600">Manage maintenance tasks and repairs</p>
               </div>
-              <button
-                onClick={() => setShowForm(!showForm)}
-                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 sm:py-2 px-4 rounded text-base sm:text-base touch-manipulation transition-colors"
-              >
-                Create Work Order
-              </button>
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-3">
+                <Link
+                  href="/work-orders/archived"
+                  className="w-full sm:w-auto bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 sm:py-2 px-4 rounded text-base sm:text-base touch-manipulation transition-colors"
+                >
+                  View Archived
+                </Link>
+                <button
+                  onClick={() => setShowForm(!showForm)}
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 sm:py-2 px-4 rounded text-base sm:text-base touch-manipulation transition-colors"
+                >
+                  Create Work Order
+                </button>
+              </div>
             </div>
           </div>
 
           {showForm && <EnhancedWorkOrderForm onWorkOrderCreated={() => { fetchWorkOrders(); setShowForm(false); }} assets={assets} onCancel={() => setShowForm(false)} />}
 
-          <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <ul className="divide-y divide-gray-200">
-              {workOrders.length === 0 ? (
-                <li className="px-4 sm:px-6 py-8 text-center text-gray-500">
-                  No work orders found. Create your first work order to get started.
-                </li>
-              ) : (
-                workOrders.map((workOrder) => (
-                  <li key={workOrder.id} className="hover:bg-gray-50 transition-colors">
-                    <div className="px-4 sm:px-6 py-4">
-                      {/* Mobile Card Layout */}
-                      <div className="sm:hidden">
-                        <div className="flex flex-col space-y-3">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1 pr-2">
-                              <div className="flex items-center space-x-2 mb-1">
-                                <span className="text-base font-bold text-gray-900">
-                                  #{workOrder.workOrderNumber}
-                                </span>
-                              </div>
-                              <Link
-                                href={`/work-orders/${workOrder.id}`}
-                                className="text-base font-medium text-blue-600 hover:text-blue-800 line-clamp-2"
-                              >
-                                {workOrder.title}
-                              </Link>
-                            </div>
-                          </div>
-
-                          <div className="flex flex-wrap gap-1">
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getWorkTypeColor(workOrder.workType)}`}>
-                              {workOrder.workType}
-                            </span>
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(workOrder.priority)}`}>
-                              {workOrder.priority}
-                            </span>
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(workOrder.status)}`}>
-                              {workOrder.status}
-                            </span>
-                          </div>
-
-                          <div className="text-sm text-gray-600 space-y-1">
-                            <p>🔧 {workOrder.asset.name} {workOrder.asset.assetTag && `(${workOrder.asset.assetTag})`}</p>
-                            {workOrder.description && (
-                              <p className="text-xs text-gray-500 line-clamp-2">{workOrder.description}</p>
-                            )}
-                          </div>
-
-                          <div className="text-xs text-gray-500 space-y-1">
-                            <p>👤 Created: {workOrder.createdBy.name || workOrder.createdBy.email}</p>
-                            <p>📅 {new Date(workOrder.createdAt).toLocaleDateString()}</p>
-                            {workOrder.assignedTo && (
-                              <p>👷 Assigned: {workOrder.assignedTo.name || workOrder.assignedTo.email}</p>
-                            )}
-                          </div>
-
-                          <div className="flex space-x-2 pt-2 border-t border-gray-100">
-                            <Link
-                              href={`/work-orders/${workOrder.id}/edit`}
-                              className="flex-1 inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 touch-manipulation transition-colors"
-                            >
-                              Edit
-                            </Link>
-                            <button
-                              onClick={() => handleArchiveWorkOrder(workOrder.id)}
-                              disabled={workOrder.status === "ARCHIVED"}
-                              className="flex-1 inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation transition-colors"
-                            >
-                              Archive
-                            </button>
-                            <button
-                              onClick={() => handleDeleteWorkOrder(workOrder.id)}
-                              className="flex-1 inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 touch-manipulation transition-colors"
-                            >
-                              Delete
-                            </button>
-                          </div>
+          {/* Work Orders Grouped by Location */}
+          {workOrders.length === 0 ? (
+            <div className="bg-white shadow rounded-lg text-center py-12">
+              <div className="text-gray-500">
+                <div className="text-6xl mb-4">🔧</div>
+                <h3 className="text-lg font-medium mb-2">No work orders found</h3>
+                <p>Create your first work order to get started with maintenance management.</p>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {Object.entries(
+                workOrders.reduce((groups, workOrder) => {
+                  const location = getWorkOrderLocation(workOrder)
+                  if (!groups[location.name]) {
+                    groups[location.name] = {
+                      type: location.type,
+                      name: location.name,
+                      data: location.data,
+                      workOrders: []
+                    }
+                  }
+                  groups[location.name].workOrders.push(workOrder)
+                  return groups
+                }, {} as Record<string, { type: string; name: string; data: any; workOrders: WorkOrder[] }>)
+              ).map(([locationName, locationData]) => (
+                <div key={locationName} className="bg-white shadow rounded-lg overflow-hidden">
+                  {/* Location Header */}
+                  <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="text-2xl">
+                          {locationData.type === 'site' && '🏢'}
+                          {locationData.type === 'building' && '🏗️'}
+                          {locationData.type === 'room' && '🚪'}
+                          {locationData.type === 'location' && '📍'}
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">{locationName}</h3>
+                          <p className="text-sm text-gray-500">
+                            {locationData.type === 'site' && 'Site'}
+                            {locationData.type === 'building' && 'Building'}
+                            {locationData.type === 'room' && 'Room'}
+                            {locationData.type === 'location' && 'Location'}
+                          </p>
                         </div>
                       </div>
+                      <span className="text-sm font-medium text-gray-600 bg-white px-3 py-1 rounded-full border border-gray-300">
+                        {locationData.workOrders.length} work order{locationData.workOrders.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  </div>
 
-                      {/* Desktop Row Layout */}
-                      <div className="hidden sm:block">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <div className="flex items-center space-x-3">
-                                  <span className="text-lg font-bold text-gray-900">
-                                    #{workOrder.workOrderNumber}
-                                  </span>
+                  {/* Work Orders List */}
+                  <div className="divide-y divide-gray-200">
+                    {locationData.workOrders.map((workOrder) => (
+                      <div key={workOrder.id} className="hover:bg-gray-50 transition-colors">
+                        <div className="px-6 py-4">
+                          {/* Mobile Card Layout */}
+                          <div className="sm:hidden">
+                            <div className="flex flex-col space-y-3">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1 pr-2">
+                                  <div className="flex items-center space-x-2 mb-1">
+                                    <span className="text-base font-bold text-gray-900">
+                                      #{workOrder.workOrderNumber}
+                                    </span>
+                                  </div>
                                   <Link
                                     href={`/work-orders/${workOrder.id}`}
-                                    className="text-sm font-medium text-blue-600 hover:text-blue-800 truncate"
+                                    className="text-base font-medium text-blue-600 hover:text-blue-800 line-clamp-2"
                                   >
                                     {workOrder.title}
                                   </Link>
                                 </div>
                               </div>
-                              <div className="flex items-center space-x-2">
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getWorkTypeColor(workOrder.workType)}`}>
+
+                              <div className="flex flex-wrap gap-1">
+                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getWorkTypeColor(workOrder.workType)}`}>
                                   {workOrder.workType}
                                 </span>
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getPriorityColor(workOrder.priority)}`}>
+                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(workOrder.priority)}`}>
                                   {workOrder.priority}
                                 </span>
-                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(workOrder.status)}`}>
+                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(workOrder.status)}`}>
                                   {workOrder.status}
                                 </span>
                               </div>
+
+                              <div className="text-sm text-gray-600 space-y-1">
+                                <p>🔧 {workOrder.asset.name} {workOrder.asset.assetTag && `(${workOrder.asset.assetTag})`}</p>
+                                {workOrder.description && (
+                                  <p className="text-xs text-gray-500 line-clamp-2">{workOrder.description}</p>
+                                )}
+                              </div>
+
+                              <div className="text-xs text-gray-500 space-y-1">
+                                <p>👤 Created: {workOrder.createdBy.name || workOrder.createdBy.email}</p>
+                                <p>📅 {new Date(workOrder.createdAt).toLocaleDateString()}</p>
+                                {workOrder.assignedTo && (
+                                  <p>👷 Assigned: {workOrder.assignedTo.name || workOrder.assignedTo.email}</p>
+                                )}
+                              </div>
+
+                              <div className="flex space-x-2 pt-2 border-t border-gray-100">
+                                <Link
+                                  href={`/work-orders/${workOrder.id}/edit`}
+                                  className="flex-1 inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 touch-manipulation transition-colors"
+                                >
+                                  Edit
+                                </Link>
+                                <button
+                                  onClick={() => handleArchiveWorkOrder(workOrder.id)}
+                                  disabled={workOrder.status === "ARCHIVED"}
+                                  className="flex-1 inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation transition-colors"
+                                >
+                                  Archive
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteWorkOrder(workOrder.id)}
+                                  className="flex-1 inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 touch-manipulation transition-colors"
+                                >
+                                  Delete
+                                </button>
+                              </div>
                             </div>
-                            <p className="mt-1 text-sm text-gray-600">
-                              Asset: {workOrder.asset.name} {workOrder.asset.assetTag && `(${workOrder.asset.assetTag})`}
-                            </p>
-                            {workOrder.description && (
-                              <p className="mt-1 text-sm text-gray-500">
-                                {workOrder.description}
-                              </p>
-                            )}
-                            <div className="mt-2 flex items-center text-xs text-gray-500">
-                              <span>Created by {workOrder.createdBy.name || workOrder.createdBy.email}</span>
-                              <span className="mx-2">•</span>
-                              <span>{new Date(workOrder.createdAt).toLocaleDateString()}</span>
-                              {workOrder.assignedTo && (
-                                <>
+                          </div>
+
+                          {/* Desktop Row Layout */}
+                          <div className="hidden sm:block">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <div className="flex items-center space-x-3">
+                                      <span className="text-lg font-bold text-gray-900">
+                                        #{workOrder.workOrderNumber}
+                                      </span>
+                                      <Link
+                                        href={`/work-orders/${workOrder.id}`}
+                                        className="text-sm font-medium text-blue-600 hover:text-blue-800 truncate"
+                                      >
+                                        {workOrder.title}
+                                      </Link>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getWorkTypeColor(workOrder.workType)}`}>
+                                      {workOrder.workType}
+                                    </span>
+                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getPriorityColor(workOrder.priority)}`}>
+                                      {workOrder.priority}
+                                    </span>
+                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(workOrder.status)}`}>
+                                      {workOrder.status}
+                                    </span>
+                                  </div>
+                                </div>
+                                <p className="mt-1 text-sm text-gray-600">
+                                  Asset: {workOrder.asset.name} {workOrder.asset.assetTag && `(${workOrder.asset.assetTag})`}
+                                </p>
+                                {workOrder.description && (
+                                  <p className="mt-1 text-sm text-gray-500">
+                                    {workOrder.description}
+                                  </p>
+                                )}
+                                <div className="mt-2 flex items-center text-xs text-gray-500">
+                                  <span>Created by {workOrder.createdBy.name || workOrder.createdBy.email}</span>
                                   <span className="mx-2">•</span>
-                                  <span>Assigned to {workOrder.assignedTo.name || workOrder.assignedTo.email}</span>
-                                </>
-                              )}
+                                  <span>{new Date(workOrder.createdAt).toLocaleDateString()}</span>
+                                  {workOrder.assignedTo && (
+                                    <>
+                                      <span className="mx-2">•</span>
+                                      <span>Assigned to {workOrder.assignedTo.name || workOrder.assignedTo.email}</span>
+                                    </>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="mt-3 flex justify-end space-x-2">
+                              <Link
+                                href={`/work-orders/${workOrder.id}/edit`}
+                                className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-manipulation transition-colors"
+                              >
+                                Edit
+                              </Link>
+                              <button
+                                onClick={() => handleArchiveWorkOrder(workOrder.id)}
+                                disabled={workOrder.status === "ARCHIVED"}
+                                className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation transition-colors"
+                              >
+                                Archive
+                              </button>
+                              <button
+                                onClick={() => handleDeleteWorkOrder(workOrder.id)}
+                                className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 touch-manipulation transition-colors"
+                              >
+                                Delete
+                              </button>
                             </div>
                           </div>
                         </div>
-                        <div className="mt-3 flex justify-end space-x-2">
-                          <Link
-                            href={`/work-orders/${workOrder.id}/edit`}
-                            className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-manipulation transition-colors"
-                          >
-                            Edit
-                          </Link>
-                          <button
-                            onClick={() => handleArchiveWorkOrder(workOrder.id)}
-                            disabled={workOrder.status === "ARCHIVED"}
-                            className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation transition-colors"
-                          >
-                            Archive
-                          </button>
-                          <button
-                            onClick={() => handleDeleteWorkOrder(workOrder.id)}
-                            className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 touch-manipulation transition-colors"
-                          >
-                            Delete
-                          </button>
-                        </div>
                       </div>
-                    </div>
-                  </li>
-                ))
-              )}
-            </ul>
-          </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
   )
+}
+
+interface AssetWithLocation {
+  id: string
+  name: string
+  assetTag: string | null
+  site: {
+    id: string
+    name: string
+    address: string | null
+  } | null
+  building: {
+    id: string
+    name: string
+    number: string
+  } | null
+  room: {
+    id: string
+    number: string
+    floor: number | null
+  } | null
 }
 
 interface EnhancedWorkOrderFormProps {
@@ -357,6 +482,66 @@ function EnhancedWorkOrderForm({ onWorkOrderCreated, onCancel, assets }: Enhance
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
+  const [assetsWithLocations, setAssetsWithLocations] = useState<AssetWithLocation[]>([])
+
+  // Fetch assets with location data when component mounts
+  useEffect(() => {
+    const fetchAssetsWithLocations = async () => {
+      try {
+        const response = await fetch("/api/assets")
+        if (response.ok) {
+          const data = await response.json()
+          setAssetsWithLocations(data)
+        }
+      } catch (error) {
+        console.error("Failed to fetch assets with locations:", error)
+      }
+    }
+    fetchAssetsWithLocations()
+  }, [])
+
+  const handleAssetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const assetId = e.target.value
+    setFormData({ ...formData, assetId })
+
+    // Find the selected asset and populate location fields
+    const selectedAsset = assetsWithLocations.find(asset => asset.id === assetId)
+    if (selectedAsset) {
+      let locationString = ""
+
+      // Build location string from asset's location data
+      if (selectedAsset.room && selectedAsset.building) {
+        locationString = `${selectedAsset.building.number}-${selectedAsset.room.number}`
+        if (selectedAsset.room.floor) {
+          locationString += ` (Floor ${selectedAsset.room.floor})`
+        }
+      } else if (selectedAsset.building) {
+        locationString = selectedAsset.building.name
+      } else if (selectedAsset.site) {
+        locationString = selectedAsset.site.name
+      }
+
+      // Update form with location data
+      setFormData(prev => ({
+        ...prev,
+        assetId,
+        siteLocation: selectedAsset.site?.name || "",
+        roomLocation: selectedAsset.room ?
+          `${selectedAsset.building?.number || ''}-${selectedAsset.room.number}` :
+          selectedAsset.building?.name || "",
+        assetLocation: locationString
+      }))
+    } else {
+      // Clear location fields if no asset selected
+      setFormData(prev => ({
+        ...prev,
+        assetId,
+        siteLocation: "",
+        roomLocation: "",
+        assetLocation: ""
+      }))
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -440,16 +625,20 @@ function EnhancedWorkOrderForm({ onWorkOrderCreated, onCancel, assets }: Enhance
                   name="assetId"
                   required
                   value={formData.assetId}
-                  onChange={handleChange}
+                  onChange={handleAssetChange}
                   className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 >
                   <option value="">Select an asset</option>
-                  {assets.map((asset) => (
+                  {assetsWithLocations.map((asset) => (
                     <option key={asset.id} value={asset.id}>
                       {asset.name} {asset.assetTag && `(${asset.assetTag})`}
+                      {asset.site && ` - ${asset.site.name}`}
+                      {asset.building && !asset.room && ` - ${asset.building.name}`}
+                      {asset.room && asset.building && ` - ${asset.building.number}-${asset.room.number}`}
                     </option>
                   ))}
                 </select>
+                <p className="mt-1 text-xs text-gray-500">Location will be automatically populated based on asset selection</p>
               </div>
               <div>
                 <label htmlFor="workType" className="block text-sm font-medium text-gray-700">Work Type *</label>
@@ -602,9 +791,11 @@ function EnhancedWorkOrderForm({ onWorkOrderCreated, onCancel, assets }: Enhance
                   name="assetLocation"
                   value={formData.assetLocation}
                   onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Exact location of the asset"
+                  readOnly
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 text-gray-700 sm:text-sm"
+                  placeholder="Auto-populated from asset selection"
                 />
+                <p className="mt-1 text-xs text-gray-500">Automatically populated from asset location</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">Room Location</label>
@@ -613,21 +804,37 @@ function EnhancedWorkOrderForm({ onWorkOrderCreated, onCancel, assets }: Enhance
                   name="roomLocation"
                   value={formData.roomLocation}
                   onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Room number or area"
+                  readOnly
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 text-gray-700 sm:text-sm"
+                  placeholder="Auto-populated from asset selection"
                 />
+                <p className="mt-1 text-xs text-gray-500">Automatically populated from asset location</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700">Ticket Type</label>
+                <label className="block text-sm font-medium text-gray-700">Site Location</label>
                 <input
                   type="text"
-                  name="ticketType"
-                  value={formData.ticketType}
+                  name="siteLocation"
+                  value={formData.siteLocation}
                   onChange={handleChange}
-                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Type of ticket"
+                  readOnly
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 text-gray-700 sm:text-sm"
+                  placeholder="Auto-populated from asset selection"
                 />
+                <p className="mt-1 text-xs text-gray-500">Automatically populated from asset location</p>
               </div>
+            </div>
+            <div className="mt-4">
+              <label htmlFor="ticketType" className="block text-sm font-medium text-gray-700">Ticket Type</label>
+              <input
+                id="ticketType"
+                type="text"
+                name="ticketType"
+                value={formData.ticketType}
+                onChange={handleChange}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                placeholder="Type of ticket (optional)"
+              />
             </div>
           </div>
 

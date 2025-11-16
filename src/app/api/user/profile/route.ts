@@ -7,6 +7,7 @@ import { z } from "zod"
 const updateProfileSchema = z.object({
   name: z.string().min(1, "Name is required").max(100, "Name is too long"),
   email: z.string().email("Invalid email address").optional(),
+  phone: z.string().optional(),
 })
 
 export async function PUT(request: NextRequest) {
@@ -32,11 +33,13 @@ export async function PUT(request: NextRequest) {
       where: { id: session.user.id },
       data: {
         name: validatedData.name,
+        phone: validatedData.phone || null,
       },
       select: {
         id: true,
         email: true,
         name: true,
+        phone: true,
         role: true,
         createdAt: true,
         updatedAt: true,
@@ -73,6 +76,7 @@ export async function GET(request: NextRequest) {
         id: true,
         email: true,
         name: true,
+        phone: true,
         role: true,
         createdAt: true,
         updatedAt: true,

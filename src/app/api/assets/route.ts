@@ -28,6 +28,27 @@ export async function GET(request: NextRequest) {
             email: true,
           },
         },
+        site: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+          },
+        },
+        building: {
+          select: {
+            id: true,
+            name: true,
+            number: true,
+          },
+        },
+        room: {
+          select: {
+            id: true,
+            number: true,
+            floor: true,
+          },
+        },
         _count: {
           select: {
             workOrders: true,

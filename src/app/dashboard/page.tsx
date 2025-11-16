@@ -188,6 +188,16 @@ export default function Dashboard() {
                   >
                     Schedule Maintenance
                   </Link>
+                  <button
+                    disabled
+                    className="block w-full text-left px-4 py-3 sm:py-2.5 bg-gradient-to-r from-gray-50 to-gray-100 text-gray-500 rounded-xl cursor-not-allowed transition-modern text-sm sm:text-base touch-manipulation font-medium relative"
+                    title="User invitation feature coming soon"
+                  >
+                    Invite Users
+                    <span className="absolute top-1 right-3 text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
+                      Coming Soon
+                    </span>
+                  </button>
                 </div>
               </CardContent>
             </Card>

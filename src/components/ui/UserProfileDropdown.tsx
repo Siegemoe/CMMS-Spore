@@ -264,7 +264,7 @@ export default function UserProfileDropdown() {
                   {user.email || "No email"}
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
-                  Phone: Not configured
+                  Phone: {user.phone || "Not configured"}
                 </p>
               </div>
             </div>
