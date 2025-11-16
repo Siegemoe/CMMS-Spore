@@ -52,7 +52,7 @@ export function MobileProfileBadge() {
         onClick={() => setIsOpen(!isOpen)}
         className="w-14 h-14 bg-blue-600 hover:bg-blue-700 rounded-full shadow-lg flex items-center justify-center text-white font-bold text-sm border-2 border-white transition-all hover:scale-105"
         aria-label="User menu"
-        aria-expanded={isOpen}
+        aria-expanded={(isOpen ? "true" : "false") as "true" | "false"}
       >
         {user.image ? (
           <img
@@ -203,7 +203,7 @@ export default function UserProfileDropdown() {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-3 text-sm font-medium text-white hover:bg-blue-700 px-3 py-2 rounded-md transition-colors"
         aria-label="User menu"
-        aria-expanded={isOpen}
+        aria-expanded={(isOpen ? "true" : "false") as "true" | "false"}
       >
         {/* User Avatar */}
         <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
