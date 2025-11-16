@@ -54,6 +54,18 @@ export default function Navbar() {
                 Sites
               </Link>
             </PermissionGuard>
+            <PermissionGuard permissions={[PERMISSIONS.BUILDINGS_READ]}>
+              <Link
+                href="/buildings"
+                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive("/buildings")
+                    ? "bg-blue-700 text-white"
+                    : "text-white hover:bg-blue-500"
+                }`}
+              >
+                Buildings
+              </Link>
+            </PermissionGuard>
             <PermissionGuard permissions={[PERMISSIONS.ASSETS_READ]}>
               <Link
                 href="/assets"
@@ -189,6 +201,19 @@ export default function Navbar() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Sites
+              </Link>
+            </PermissionGuard>
+            <PermissionGuard permissions={[PERMISSIONS.BUILDINGS_READ]}>
+              <Link
+                href="/buildings"
+                className={`block px-3 py-3 rounded-md text-base font-medium transition-colors ${
+                  isActive("/buildings")
+                    ? "bg-blue-700 text-white"
+                    : "text-white hover:bg-blue-500"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Buildings
               </Link>
             </PermissionGuard>
             <PermissionGuard permissions={[PERMISSIONS.ASSETS_READ]}>

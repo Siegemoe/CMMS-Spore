@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Navbar from "@/components/ui/navbar"
-import { Loading, Card, CardHeader, CardContent, Button } from "@/components/shared"
+import { Loading, Card, CardHeader, CardContent, Button, ConfirmDialog } from "@/components/shared"
 import { useAuthRedirect } from "@/hooks"
 import { useAuthorization } from "@/hooks/useAuthorization"
 import { PERMISSIONS } from "@/lib/authorization"
@@ -48,6 +48,12 @@ export default function UserManagement() {
     search: "",
     role: ""
   })
+  const [deleteDialog, setDeleteDialog] = useState({
+    isOpen: false,
+    userId: "",
+    userEmail: ""
+  })
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (isAuthenticated && can(PERMISSIONS.USERS_READ)) {
@@ -83,16 +89,24 @@ export default function UserManagement() {
   }
 
   const handleDeleteUser = async (userId: string, userEmail: string) => {
-    if (!confirm(`Are you sure you want to delete ${userEmail}? This action cannot be undone.`)) {
-      return
-    }
+    setDeleteDialog({
+      isOpen: true,
+      userId,
+      userEmail
+    })
+  }
+
+  const confirmDeleteUser = async () => {
+    setDeleting(true)
+    setError("")
 
     try {
-      const response = await fetch(`/api/users/${userId}`, {
+      const response = await fetch(`/api/users/${deleteDialog.userId}`, {
         method: "DELETE"
       })
 
       if (response.ok) {
+        setDeleteDialog({ isOpen: false, userId: "", userEmail: "" })
         await fetchUsers()
       } else {
         const data = await response.json()
@@ -101,6 +115,14 @@ export default function UserManagement() {
     } catch (error) {
       console.error("Failed to delete user:", error)
       setError("Something went wrong")
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const cancelDelete = () => {
+    if (!deleting) {
+      setDeleteDialog({ isOpen: false, userId: "", userEmail: "" })
     }
   }
 
@@ -362,6 +384,19 @@ export default function UserManagement() {
           </Card>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={cancelDelete}
+        onConfirm={confirmDeleteUser}
+        title="Delete User"
+        message={`Are you sure you want to delete ${deleteDialog.userEmail}? This action cannot be undone and will remove all associated data.`}
+        confirmText="Delete User"
+        cancelText="Cancel"
+        variant="danger"
+        loading={deleting}
+      />
     </div>
   )
 }

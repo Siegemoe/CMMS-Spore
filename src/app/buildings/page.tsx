@@ -5,6 +5,8 @@ import Link from "next/link"
 import Navbar from "@/components/ui/navbar"
 import { Loading } from "@/components/shared"
 import { useAuthRedirect, useStatusColors } from "@/hooks"
+import { useAuthorization } from "@/hooks/useAuthorization"
+import { PERMISSIONS } from "@/lib/authorization"
 
 interface Building {
   id: string
@@ -34,10 +36,10 @@ interface Building {
 
 export default function Buildings() {
   const { session, isLoading, isAuthenticated } = useAuthRedirect()
+  const { can } = useAuthorization()
   const { getStatusColor } = useStatusColors()
   const [buildings, setBuildings] = useState<Building[]>([])
   const [loading, setLoading] = useState(true)
-  const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterStatus, setFilterStatus] = useState("")
   const [filterSite, setFilterSite] = useState("")
@@ -110,12 +112,14 @@ export default function Buildings() {
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Buildings</h1>
                 <p className="mt-2 text-sm sm:text-base text-gray-600">Manage your facility buildings and structures</p>
               </div>
-              <button
-                onClick={() => setShowForm(!showForm)}
-                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 sm:py-2 px-4 rounded text-base sm:text-base touch-manipulation transition-colors"
-              >
-                Add Building
-              </button>
+              {can(PERMISSIONS.BUILDINGS_WRITE) && (
+                <Link
+                  href="/buildings/create"
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 sm:py-2 px-4 rounded text-base sm:text-base touch-manipulation transition-colors text-center"
+                >
+                  Create Building
+                </Link>
+              )}
             </div>
           </div>
 
@@ -163,8 +167,6 @@ export default function Buildings() {
               </select>
             </div>
           </div>
-
-          {showForm && <BuildingForm onBuildingCreated={fetchBuildings} onCancel={() => setShowForm(false)} sites={sites} />}
 
           {/* Buildings Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -247,228 +249,6 @@ export default function Buildings() {
             )}
           </div>
         </div>
-      </div>
-    </div>
-  )
-}
-
-// Building Form Component
-interface BuildingFormProps {
-  onBuildingCreated: () => void
-  onCancel: () => void
-  sites: Array<{ id: string; name: string }>
-}
-
-function BuildingForm({ onBuildingCreated, onCancel, sites }: BuildingFormProps) {
-  const [formData, setFormData] = useState({
-    name: "",
-    number: "",
-    description: "",
-    floors: "",
-    status: "ACTIVE",
-    siteId: "",
-    facilityTechnicianId: "",
-  })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [users, setUsers] = useState<Array<{ id: string; name: string | null; email: string }>>([])
-
-  useEffect(() => {
-    fetchUsers()
-  }, [])
-
-  const fetchUsers = async () => {
-    try {
-      // For now, use a simple approach - we can implement users API later
-      const users = [
-        { id: "1", name: "Admin User", email: "admin@example.com" },
-        { id: "2", name: "Facility Manager", email: "facility@example.com" },
-        { id: "3", name: "Maintenance Lead", email: "maintenance@example.com" }
-      ]
-      setUsers(users)
-    } catch (error) {
-      console.error("Failed to fetch users:", error)
-    }
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError("")
-    setLoading(true)
-
-    try {
-      const submitData = {
-        ...formData,
-        floors: formData.floors ? parseInt(formData.floors) : null,
-        facilityTechnicianId: formData.facilityTechnicianId || null,
-      }
-
-      const response = await fetch("/api/buildings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(submitData),
-      })
-
-      if (response.ok) {
-        onBuildingCreated()
-        setFormData({
-          name: "",
-          number: "",
-          description: "",
-          floors: "",
-          status: "ACTIVE",
-          siteId: "",
-          facilityTechnicianId: "",
-        })
-      } else {
-        const data = await response.json()
-        setError(data.error || "Failed to create building")
-      }
-    } catch (error) {
-      setError("Something went wrong")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
-
-  return (
-    <div className="bg-white shadow sm:rounded-lg mb-6 sm:mb-8">
-      <div className="px-4 py-5 sm:p-6">
-        <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Add New Building</h3>
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Building Name *</label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                required
-                value={formData.name}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-3 sm:py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm touch-manipulation"
-              />
-            </div>
-            <div>
-              <label htmlFor="number" className="block text-sm font-medium text-gray-700">Building Number *</label>
-              <input
-                type="text"
-                id="number"
-                name="number"
-                required
-                value={formData.number}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-3 sm:py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm touch-manipulation"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
-            <textarea
-              id="description"
-              name="description"
-              rows={3}
-              value={formData.description}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-3 sm:py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm touch-manipulation"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div>
-              <label htmlFor="floors" className="block text-sm font-medium text-gray-700">Number of Floors</label>
-              <input
-                type="number"
-                id="floors"
-                name="floors"
-                min="1"
-                max="200"
-                value={formData.floors}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-3 sm:py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm touch-manipulation"
-              />
-            </div>
-            <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status</label>
-              <select
-                id="status"
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-3 sm:py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm touch-manipulation"
-              >
-                <option value="ACTIVE">Active</option>
-                <option value="INACTIVE">Inactive</option>
-                <option value="MAINTENANCE">Maintenance</option>
-              </select>
-            </div>
-            <div>
-              <label htmlFor="siteId" className="block text-sm font-medium text-gray-700">Site *</label>
-              <select
-                id="siteId"
-                name="siteId"
-                required
-                value={formData.siteId}
-                onChange={handleChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-3 sm:py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm touch-manipulation"
-              >
-                <option value="">Select a site</option>
-                {sites.map((site) => (
-                  <option key={site.id} value={site.id}>
-                    {site.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="facilityTechnicianId" className="block text-sm font-medium text-gray-700">Facility Technician</label>
-            <select
-              id="facilityTechnicianId"
-              name="facilityTechnicianId"
-              value={formData.facilityTechnicianId}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-3 sm:py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm touch-manipulation"
-            >
-              <option value="">Select a technician</option>
-              {users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.name || user.email}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex flex-col sm:flex-row sm:justify-end gap-3">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="w-full sm:w-auto bg-white py-3 sm:py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-manipulation transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full sm:w-auto bg-blue-600 py-3 sm:py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 touch-manipulation transition-colors"
-            >
-              {loading ? "Creating..." : "Create Building"}
-            </button>
-          </div>
-        </form>
       </div>
     </div>
   )

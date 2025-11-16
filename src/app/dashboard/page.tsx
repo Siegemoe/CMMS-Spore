@@ -182,13 +182,12 @@ export default function Dashboard() {
                   >
                     Add New Asset
                   </Link>
-                  <button
-                    disabled
-                    className="w-full text-left px-4 py-3 sm:py-2.5 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-400 rounded-xl cursor-not-allowed text-sm sm:text-base touch-manipulation font-medium"
-                    title="Coming soon"
+                  <Link
+                    href="/maintenance/schedule"
+                    className="block w-full text-left px-4 py-3 sm:py-2.5 bg-gradient-to-r from-orange-50 to-orange-100 text-orange-700 rounded-xl hover:from-orange-100 hover:to-orange-200 transition-modern text-sm sm:text-base touch-manipulation font-medium"
                   >
                     Schedule Maintenance
-                  </button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>
