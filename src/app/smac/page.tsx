@@ -26,10 +26,10 @@ export default function SMACPage() {
                 SMAC
               </Link>
               <Link
-                href="/auth/signin"
+                href={session ? "/dashboard" : "/auth/signin"}
                 className="px-3 py-2 rounded-md text-sm font-medium transition-colors text-white hover:bg-blue-500"
               >
-                Sign In
+                {session ? "CMMS" : "Sign In"}
               </Link>
             </div>
 
@@ -37,10 +37,10 @@ export default function SMACPage() {
             <div className="md:hidden">
               <div className="flex items-center space-x-2">
                 <Link
-                  href="/auth/signin"
+                  href={session ? "/dashboard" : "/auth/signin"}
                   className="bg-blue-700 hover:bg-blue-800 px-3 py-2 rounded-md text-sm font-medium transition-colors"
                 >
-                  Sign In
+                  {session ? "CMMS" : "Sign In"}
                 </Link>
                 <button
                   className="inline-flex items-center justify-center p-2 rounded-md text-white hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
