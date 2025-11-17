@@ -1,32 +1,13 @@
 import { Prisma } from '@prisma/client'
+import { BaseRoom, BaseBuilding, BaseSite, BaseUser, BaseCount, LocationInfo } from './shared'
 
-// Define the nested types explicitly to avoid type inference issues
-export interface AssetRoom {
-  id: string
-  number: string
-  floor: number | null
-}
-
-export interface AssetBuilding {
-  id: string
-  name: string
-  number: string
-}
-
-export interface AssetSite {
-  id: string
-  name: string
-  address: string | null
-}
-
-export interface AssetCreatedBy {
-  name: string | null
-  email: string
-}
-
-export interface AssetCount {
-  workOrders: number
-}
+// Re-export shared types for backward compatibility and specific naming
+export type AssetRoom = BaseRoom
+export type AssetBuilding = BaseBuilding
+export type AssetSite = BaseSite
+export type AssetCreatedBy = BaseUser
+export type AssetCount = BaseCount
+export type AssetLocationInfo = LocationInfo
 
 // Asset type matching the API response structure
 export type Asset = {

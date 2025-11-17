@@ -1,34 +1,18 @@
-export interface WorkOrderRoom {
+import { BaseRoom, BaseBuilding, BaseSite, BaseUser, BaseCount, LocationInfo } from './shared'
+
+// Re-export shared types for backward compatibility and specific naming
+export type WorkOrderRoom = BaseRoom
+export type WorkOrderBuilding = BaseBuilding
+export type WorkOrderSite = BaseSite
+export type WorkOrderCount = BaseCount
+export type WorkOrderLocationInfo = LocationInfo
+
+export interface WorkOrderAssignedTo extends BaseUser {
   id: string
-  number: string
-  floor: number | null
 }
 
-export interface WorkOrderBuilding {
-  id: string
-  name: string
-  number: string
-}
-
-export interface WorkOrderSite {
-  id: string
-  name: string
-  address: string | null
-}
-
-export interface WorkOrderAssignedTo {
-  id: string
-  name: string | null
-  email: string
-}
-
-export interface WorkOrderCreatedBy {
-  name: string | null
-  email: string
-}
-
-export interface WorkOrderCount {
-  workOrders: number
+export interface WorkOrderCreatedBy extends BaseUser {
+  // Note: WorkOrderCreatedBy doesn't have an id field
 }
 
 export interface WorkOrderAsset {
@@ -67,8 +51,3 @@ export interface WorkOrder {
   updatedAt: string
 }
 
-export interface WorkOrderLocationInfo {
-  type: 'site' | 'building' | 'room' | 'location'
-  name: string
-  data: any
-}
