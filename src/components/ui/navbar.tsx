@@ -7,6 +7,8 @@ import { useState } from "react"
 import { useAuthorization, PermissionGuard } from "@/hooks/useAuthorization"
 import { PERMISSIONS } from "@/lib/authorization"
 import UserProfileDropdown, { MobileProfileBadge } from "@/components/ui/UserProfileDropdown"
+import AlertsDropdown from "@/components/alerts/AlertsDropdown"
+import { MobileAlertsBadge } from "@/components/alerts/MobileAlertsBadge"
 
 export default function Navbar() {
   const { data: session } = useSession()
@@ -128,6 +130,9 @@ export default function Navbar() {
                 SMAC
               </Link>
               <div className="ml-4 hidden md:block">
+                <AlertsDropdown />
+              </div>
+              <div className="ml-2 hidden md:block">
                 <UserProfileDropdown />
               </div>
             </div>
@@ -292,6 +297,8 @@ export default function Navbar() {
 
       {/* Mobile Floating Profile Badge */}
       <MobileProfileBadge />
+      {/* Mobile Floating Alerts Badge */}
+      <MobileAlertsBadge />
     </>
   )
 }
