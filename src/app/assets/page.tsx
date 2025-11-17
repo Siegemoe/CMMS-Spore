@@ -6,38 +6,12 @@ import Navbar from "@/components/ui/navbar"
 import AssetForm from "@/components/forms/AssetForm"
 import { Loading } from "@/components/shared"
 import { useAuthRedirect, useStatusColors, useCategoryColors } from "@/hooks"
+import { Asset } from "@/types/asset"
 
-interface Asset {
-  id: string
+interface AssetLocationInfo {
+  type: 'site' | 'building' | 'room' | 'location'
   name: string
-  description: string | null
-  assetTag: string | null
-  category: string
-  location: string
-  status: string
-  purchaseDate: string | null
-  purchaseCost: number | null
-  warrantyEnd: string | null
-  createdAt: string
-  updatedAt: string
-  site: {
-    id: string
-    name: string
-    address: string | null
-  } | null
-  building: {
-    id: string
-    name: string
-    number: string
-  } | null
-  room: {
-    id: string
-    number: string
-    floor: number | null
-  } | null
-  _count: {
-    workOrders: number
-  }
+  data: any
 }
 
 export default function Assets() {
@@ -73,31 +47,41 @@ export default function Assets() {
     }
   }
 
-  const getAssetLocation = (asset: Asset) => {
+  const getAssetLocation = (asset: Asset): AssetLocationInfo => {
+    // Check in priority order: site > building > room > location
     if (asset.site) {
       return {
         type: 'site',
         name: asset.site.name,
         data: asset.site
       }
-    } else if (asset.building) {
+    }
+    
+    if (asset.building && !asset.room) {
       return {
         type: 'building',
         name: asset.building.name,
         data: asset.building
       }
-    } else if (asset.room) {
+    }
+    
+    if (asset.room) {
+      // Extract values before the conditional to avoid type narrowing issues
+      const roomData = asset.room
+      const buildingData = asset.building
+      const roomNumber = roomData?.number || 'Unknown'
+      const buildingNumber = buildingData?.number || 'Unknown'
       return {
-        type: 'room' as const,
-        name: `${asset.building?.number || 'Unknown'}-${(asset.room as any).number}`,
-        data: asset.room
+        type: 'room',
+        name: `${buildingNumber}-${roomNumber}`,
+        data: roomData
       }
-    } else {
-      return {
-        type: 'location',
-        name: asset.location || 'Unknown Location',
-        data: null
-      }
+    }
+    
+    return {
+      type: 'location',
+      name: asset.location || 'Unknown Location',
+      data: null
     }
   }
 
@@ -248,8 +232,8 @@ export default function Assets() {
                             <div className="flex items-center gap-1">
                               {asset.room && asset.building && (
                                 <>
-                                  <span className="font-medium">{asset.building.number}-{(asset.room as any).number}</span>
-                                  {(asset.room as any).floor && <span className="text-gray-400">Floor {(asset.room as any).floor}</span>}
+                                  <span className="font-medium">{asset.building.number}-{asset.room.number}</span>
+                                  {asset.room.floor && <span className="text-gray-400">Floor {asset.room.floor}</span>}
                                 </>
                               )}
                               {asset.building && !asset.room && (

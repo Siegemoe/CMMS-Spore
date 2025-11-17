@@ -5,39 +5,7 @@ import { useEffect, useState } from "react"
 import Navbar from "@/components/ui/navbar"
 import { Loading } from "@/components/shared"
 import { useAuthRedirect, useStatusColors, useCategoryColors } from "@/hooks"
-
-interface Asset {
-  id: string
-  name: string
-  description: string | null
-  assetTag: string | null
-  category: string
-  location: string
-  status: string
-  purchaseDate: string | null
-  purchaseCost: number | null
-  warrantyEnd: string | null
-  createdAt: string
-  updatedAt: string
-  site: {
-    id: string
-    name: string
-    address: string | null
-  } | null
-  building: {
-    id: string
-    name: string
-    number: string
-  } | null
-  room: {
-    id: string
-    number: string
-    floor: number | null
-  } | null
-  _count: {
-    workOrders: number
-  }
-}
+import { Asset, AssetLocationInfo } from "@/types/asset"
 
 export default function ArchivedAssets() {
   const { session, isLoading, isAuthenticated } = useAuthRedirect()
@@ -57,7 +25,7 @@ export default function ArchivedAssets() {
     try {
       const response = await fetch("/api/assets")
       if (response.ok) {
-        const data = await response.json()
+        const data: Asset[] = await response.json()
         // Filter to only show archived assets
         const archivedAssets = data.filter((asset: Asset) => asset.status === "ARCHIVED")
         setAssets(archivedAssets)
@@ -69,31 +37,41 @@ export default function ArchivedAssets() {
     }
   }
 
-  const getAssetLocation = (asset: Asset) => {
+  const getAssetLocation = (asset: Asset): AssetLocationInfo => {
+    // Check in priority order: site > building > room > location
     if (asset.site) {
       return {
-        type: 'site' as const,
+        type: 'site',
         name: asset.site.name,
         data: asset.site
       }
-    } else if (asset.building) {
+    }
+    
+    if (asset.building && !asset.room) {
       return {
-        type: 'building' as const,
+        type: 'building',
         name: asset.building.name,
         data: asset.building
       }
-    } else if (asset.room) {
+    }
+    
+    if (asset.room) {
+      // Extract values before the conditional to avoid type narrowing issues
+      const roomData = asset.room
+      const buildingData = asset.building
+      const roomNumber = roomData?.number || 'Unknown'
+      const buildingNumber = buildingData?.number || 'Unknown'
       return {
-        type: 'room' as const,
-        name: `${asset.building?.number || 'Unknown'}-${(asset.room as any).number}`,
-        data: asset.room
+        type: 'room',
+        name: `${buildingNumber}-${roomNumber}`,
+        data: roomData
       }
-    } else {
-      return {
-        type: 'location' as const,
-        name: asset.location || 'Unknown Location',
-        data: null
-      }
+    }
+    
+    return {
+      type: 'location',
+      name: asset.location || 'Unknown Location',
+      data: null
     }
   }
 
@@ -140,14 +118,22 @@ export default function ArchivedAssets() {
         alert(data.error || "Failed to delete asset")
       }
     } catch (error) {
-      alert("Something went wrong")
+      console.error("Failed to delete asset:", error)
+      alert("Failed to delete asset")
     } finally {
       setActionLoading(null)
     }
   }
 
   if (isLoading || loading) {
-    return <Loading />
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Loading />
+        </div>
+      </div>
+    )
   }
 
   if (!isAuthenticated) {
@@ -157,159 +143,90 @@ export default function ArchivedAssets() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8 relative z-base">
-        <div className="px-0 py-4 sm:py-6 sm:px-0">
-          <div className="mb-6 sm:mb-8">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Archived Assets</h1>
-                <p className="mt-2 text-sm sm:text-base text-gray-600">View and restore archived equipment and facilities</p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-3">
-                <Link
-                  href="/assets"
-                  className="w-full sm:w-auto bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 sm:py-2 px-4 rounded text-base sm:text-base touch-manipulation transition-colors"
-                >
-                  Back to Active
-                </Link>
-              </div>
-            </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Archived Assets</h1>
+          <p className="mt-2 text-gray-600">
+            View and manage archived assets. You can unarchive or permanently delete assets from here.
+          </p>
+        </div>
+
+        <div className="mb-6">
+          <Link
+            href="/assets"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            ← Back to Assets
+          </Link>
+        </div>
+
+        {assets.length === 0 ? (
+          <div className="bg-white shadow rounded-lg p-6">
+            <p className="text-gray-500 text-center">No archived assets found.</p>
           </div>
-
-          {/* Archived Assets Grouped by Location */}
-          {assets.length === 0 ? (
-            <div className="bg-white shadow rounded-lg text-center py-12">
-              <div className="text-gray-500">
-                <div className="text-6xl mb-4">📁</div>
-                <h3 className="text-lg font-medium mb-2">No archived assets found</h3>
-                <p>Archived assets will appear here for reference and restoration.</p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {Object.entries(
-                assets.reduce((groups, asset) => {
-                  const location = getAssetLocation(asset)
-                  if (!groups[location.name]) {
-                    groups[location.name] = {
-                      type: location.type,
-                      name: location.name,
-                      data: location.data,
-                      assets: []
-                    }
-                  }
-                  groups[location.name].assets.push(asset)
-                  return groups
-                }, {} as Record<string, { type: string; name: string; data: any; assets: Asset[] }>)
-              ).map(([locationName, locationData]) => (
-                <div key={locationName} className="bg-white shadow rounded-lg overflow-hidden">
-                  {/* Location Header */}
-                  <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="text-2xl">
-                          {locationData.type === 'site' && '🏢'}
-                          {locationData.type === 'building' && '🏗️'}
-                          {locationData.type === 'room' && '🚪'}
-                          {locationData.type === 'location' && '📍'}
-                        </div>
-                        <div>
-                          <h3 className="text-lg font-semibold text-gray-900">{locationName}</h3>
-                          <p className="text-sm text-gray-500">
-                            {locationData.type === 'site' && 'Site'}
-                            {locationData.type === 'building' && 'Building'}
-                            {locationData.type === 'room' && 'Room'}
-                            {locationData.type === 'location' && 'Location'}
-                          </p>
-                        </div>
-                      </div>
-                      <span className="text-sm font-medium text-gray-600 bg-white px-3 py-1 rounded-full border border-gray-300">
-                        {locationData.assets.length} archived asset{locationData.assets.length !== 1 ? 's' : ''}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Assets Grid */}
-                  <div className="p-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {locationData.assets.map((asset) => (
-                        <div key={asset.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow opacity-75">
-                          <div className="flex items-start justify-between mb-3">
-                            <div className="flex-1 min-w-0">
-                              <h4 className="text-base font-medium text-gray-900 truncate">{asset.name}</h4>
-                              {asset.assetTag && (
-                                <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800 mt-1">
-                                  {asset.assetTag}
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex flex-wrap gap-1 ml-2">
-                              <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(asset.category)}`}>
-                                {asset.category}
-                              </span>
-                              <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(asset.status)}`}>
+        ) : (
+          <div className="bg-white shadow overflow-hidden sm:rounded-md">
+            <ul className="divide-y divide-gray-200">
+              {assets.map((asset) => {
+                const location = getAssetLocation(asset)
+                return (
+                  <li key={asset.id}>
+                    <div className="px-4 py-4 sm:px-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <p className="text-sm font-medium text-blue-600 truncate">{asset.name}</p>
+                            <div className="ml-2 flex-shrink-0 flex">
+                              <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(asset.status)}`}>
                                 {asset.status}
                               </span>
+                              <span className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getCategoryColor(asset.category)}`}>
+                                {asset.category}
+                              </span>
                             </div>
                           </div>
-
-                          {/* Location Details */}
-                          <div className="flex items-center text-sm text-gray-600 mb-2">
-                            <div className="flex items-center gap-1">
-                              {asset.room && asset.building && (
-                                <>
-                                  <span className="font-medium">{asset.building.number}-{asset.room.number}</span>
-                                  {asset.room.floor && <span className="text-gray-400">Floor {asset.room.floor}</span>}
-                                </>
-                              )}
-                              {asset.building && !asset.room && (
-                                <span className="font-medium">{asset.building.name}</span>
-                              )}
-                              {asset.site && (
-                                <span className="text-gray-400">• {asset.site.name}</span>
-                              )}
-                            </div>
+                          <div className="mt-2 sm:flex sm:justify-between">
+                          <div className="sm:flex">
+                            <p className="flex items-center text-sm text-gray-500">
+                              {asset.assetTag || 'No tag'}
+                            </p>
+                            <p className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0 sm:ml-6">
+                              {location.name}
+                            </p>
                           </div>
-
-                          {/* Asset Details */}
-                          {asset.description && (
-                            <p className="text-sm text-gray-600 mb-3 line-clamp-2">{asset.description}</p>
-                          )}
-
-                          {/* Stats */}
-                          <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-                            <span>Work Orders: {asset._count.workOrders}</span>
-                            {asset.purchaseCost && (
-                              <span>Cost: ${asset.purchaseCost.toLocaleString()}</span>
-                            )}
+                          <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                            <p>
+                              {asset.category} • {asset.status}
+                            </p>
                           </div>
-
-                          {/* Actions */}
-                          <div className="flex gap-2">
+                        </div>
+                        </div>
+                        <div className="ml-5 flex-shrink-0">
+                          <div className="flex space-x-2">
                             <button
                               onClick={() => handleUnarchive(asset.id)}
                               disabled={actionLoading === asset.id}
-                              className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-medium py-2 px-3 rounded text-sm touch-manipulation transition-colors"
+                              className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
                             >
-                              {actionLoading === asset.id ? "Restoring..." : "Restore"}
+                              {actionLoading === asset.id ? "Processing..." : "Unarchive"}
                             </button>
                             <button
                               onClick={() => handleDelete(asset.id)}
                               disabled={actionLoading === asset.id}
-                              className="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-medium py-2 px-3 rounded text-sm touch-manipulation transition-colors"
+                              className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
                             >
-                              {actionLoading === asset.id ? "Deleting..." : "Delete"}
+                              {actionLoading === asset.id ? "Processing..." : "Delete"}
                             </button>
                           </div>
                         </div>
-                      ))}
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   )
