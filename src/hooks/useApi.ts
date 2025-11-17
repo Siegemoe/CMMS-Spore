@@ -14,6 +14,7 @@ interface ApiOptions {
   headers?: Record<string, string>
   onSuccess?: (data: any) => void
   onError?: (error: string) => void
+  [key: string]: any // Allow additional properties like status
 }
 
 /**
@@ -146,17 +147,18 @@ export function usePost<T = any>(options: Omit<ApiOptions, 'method'> = {}) {
 /**
  * Specialized hook for PATCH requests
  */
-export function usePatch<T = any>(options: Omit<ApiOptions, 'method'> = {}) {
+export function usePatch<T = any>(defaultUrl: string = '', options: Omit<ApiOptions, 'method'> = {}) {
   const api = useApi<T>()
 
-  const patch = useCallback(async (url: string, body?: any, patchOptions?: Omit<ApiOptions, 'method' | 'body'>) => {
-    return api.execute(url, {
+  const patch = useCallback(async (url?: string, body?: any, patchOptions?: Omit<ApiOptions, 'method' | 'body'>) => {
+    const targetUrl = url || defaultUrl
+    return api.execute(targetUrl, {
       ...options,
       ...patchOptions,
       method: 'PATCH',
       body
     })
-  }, [api, options])
+  }, [api, defaultUrl, options])
 
   return {
     ...api,
@@ -167,16 +169,17 @@ export function usePatch<T = any>(options: Omit<ApiOptions, 'method'> = {}) {
 /**
  * Specialized hook for DELETE requests
  */
-export function useDelete<T = any>(options: Omit<ApiOptions, 'method'> = {}) {
+export function useDelete<T = any>(defaultUrl: string = '', options: Omit<ApiOptions, 'method'> = {}) {
   const api = useApi<T>()
 
-  const del = useCallback(async (url: string, deleteOptions?: Omit<ApiOptions, 'method'>) => {
-    return api.execute(url, {
+  const del = useCallback(async (url?: string, deleteOptions?: Omit<ApiOptions, 'method'>) => {
+    const targetUrl = url || defaultUrl
+    return api.execute(targetUrl, {
       ...options,
       ...deleteOptions,
       method: 'DELETE'
     })
-  }, [api, options])
+  }, [api, defaultUrl, options])
 
   return {
     ...api,
@@ -193,47 +196,47 @@ export const useApiEndpoints = {
 
   // Work Orders
   useWorkOrders: () => useFetch('/api/work-orders'),
-  useCreateWorkOrder: () => usePost('/api/work-orders'),
-  useUpdateWorkOrder: (id: string) => usePatch(`/api/work-orders/${id}`),
-  useDeleteWorkOrder: (id: string) => useDelete(`/api/work-orders/${id}`),
+  useCreateWorkOrder: () => usePost(),
+  useUpdateWorkOrder: (id: string = '') => usePatch(id),
+  useDeleteWorkOrder: (id: string = '') => useDelete(id),
 
   // Assets
   useAssets: () => useFetch('/api/assets'),
-  useCreateAsset: () => usePost('/api/assets'),
-  useUpdateAsset: (id: string) => usePatch(`/api/assets/${id}`),
-  useDeleteAsset: (id: string) => useDelete(`/api/assets/${id}`),
+  useCreateAsset: () => usePost(),
+  useUpdateAsset: (id: string = '') => usePatch(id),
+  useDeleteAsset: (id: string = '') => useDelete(id),
 
   // Sites
   useSites: () => useFetch('/api/sites'),
-  useCreateSite: () => usePost('/api/sites'),
-  useUpdateSite: (id: string) => usePatch(`/api/sites/${id}`),
-  useDeleteSite: (id: string) => useDelete(`/api/sites/${id}`),
+  useCreateSite: () => usePost(),
+  useUpdateSite: (id: string = '') => usePatch(id),
+  useDeleteSite: (id: string = '') => useDelete(id),
 
   // Buildings
   useBuildings: () => useFetch('/api/buildings'),
-  useCreateBuilding: () => usePost('/api/buildings'),
-  useUpdateBuilding: (id: string) => usePatch(`/api/buildings/${id}`),
-  useDeleteBuilding: (id: string) => useDelete(`/api/buildings/${id}`),
+  useCreateBuilding: () => usePost(),
+  useUpdateBuilding: (id: string = '') => usePatch(id),
+  useDeleteBuilding: (id: string = '') => useDelete(id),
 
   // Users
   useUsers: () => useFetch('/api/users'),
-  useCreateUser: () => usePost('/api/users'),
-  useUpdateUser: (id: string) => usePatch(`/api/users/${id}`),
-  useDeleteUser: (id: string) => useDelete(`/api/users/${id}`),
+  useCreateUser: () => usePost(),
+  useUpdateUser: (id: string = '') => usePatch(id),
+  useDeleteUser: (id: string = '') => useDelete(id),
 
   // User Profile
   useUserProfile: () => useFetch('/api/user/profile'),
-  useUpdateUserProfile: () => usePatch('/api/user/profile'),
-  useChangePassword: () => usePost('/api/user/change-password'),
+  useUpdateUserProfile: () => usePatch('/api/user/profile', {}),
+  useChangePassword: () => usePost(),
 
   // Notifications
   useNotificationPreferences: () => useFetch('/api/notifications/preferences'),
-  useUpdateNotificationPreferences: () => usePost('/api/notifications/preferences'),
+  useUpdateNotificationPreferences: () => usePost(),
 
   // Activity
   useActivity: () => useFetch('/api/activity'),
 
   // Alerts
   useAlerts: () => useFetch('/api/alerts/sample'),
-  useCreateAlert: () => usePost('/api/alerts/sample'),
+  useCreateAlert: () => usePost(),
 }

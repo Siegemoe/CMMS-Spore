@@ -15,7 +15,7 @@ export default function WorkOrders() {
   const { getStatusColor } = useStatusColors()
   const { getPriorityColor } = usePriorityColors()
   const { getWorkTypeColor } = useWorkTypeColors()
-  const { useWorkOrders, useAssets, useUpdateWorkOrder, useDeleteWorkOrder } = useApiEndpoints()
+  const { useWorkOrders, useAssets, useUpdateWorkOrder, useDeleteWorkOrder } = useApiEndpoints
 
   const { data: workOrdersData, loading: workOrdersLoading, fetchData: fetchWorkOrders } = useWorkOrders()
   const { data: assetsData, loading: assetsLoading, fetchData: fetchAssets } = useAssets()

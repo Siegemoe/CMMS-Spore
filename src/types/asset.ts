@@ -34,12 +34,6 @@ export type Asset = {
   _count: AssetCount
 }
 
-// Asset location information for display purposes
-export interface AssetLocationInfo {
-  type: 'site' | 'building' | 'room' | 'location'
-  name: string
-  data: any // Site | Building | Room | null
-}
 
 // Archived asset type (same as Asset but filtered by status)
 export type ArchivedAsset = Asset

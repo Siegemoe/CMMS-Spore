@@ -7,3 +7,11 @@ export {
   useWorkTypeColors,
   useRoomStatusColors
 } from "./useColorMaps"
+export {
+  useApi,
+  useFetch,
+  usePost,
+  usePatch,
+  useDelete,
+  useApiEndpoints
+} from "./useApi"
