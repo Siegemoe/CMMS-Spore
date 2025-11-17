@@ -5,61 +5,15 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import Navbar from "@/components/ui/navbar"
-
-interface WorkOrder {
-  id: string
-  workOrderNumber: string
-  title: string
-  description: string | null
-  priority: string
-  status: string
-  assetId: string
-  asset: {
-    name: string
-    assetTag: string | null
-  }
-  assignedTo: {
-    id: string
-    name: string | null
-    email: string
-  } | null
-  assignedToId: string | null
-  createdBy: {
-    name: string | null
-    email: string
-  }
-  workType: string
-  scopeOfWork: string | null
-  partsRequired: string | null
-  toolsRequired: string | null
-  otherResources: string | null
-  safetyNotes: string | null
-  estimatedStart: string | null
-  estimatedCompletion: string | null
-  ticketType: string | null
-  siteLocation: string | null
-  roomLocation: string | null
-  assetLocation: string | null
-}
-
-interface Asset {
-  id: string
-  name: string
-  assetTag: string | null
-}
-
-interface User {
-  id: string
-  name: string | null
-  email: string
-}
+import { WorkOrder } from "@/types/work-order"
+import { Asset } from "@/types/asset"
 
 export default function EditWorkOrder({ params }: { params: Promise<{ id: string }> }) {
   const { data: session, status } = useSession()
   const router = useRouter()
   const [workOrder, setWorkOrder] = useState<WorkOrder | null>(null)
   const [assets, setAssets] = useState<Asset[]>([])
-  const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")

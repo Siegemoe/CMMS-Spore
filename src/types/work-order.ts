@@ -17,6 +17,7 @@ export interface WorkOrderSite {
 }
 
 export interface WorkOrderAssignedTo {
+  id: string
   name: string | null
   email: string
 }
@@ -48,6 +49,7 @@ export interface WorkOrder {
   assetId: string
   asset: WorkOrderAsset
   assignedTo: WorkOrderAssignedTo | null
+  assignedToId: string | null
   createdBy: WorkOrderCreatedBy
   workType: string
   scopeOfWork: string | null

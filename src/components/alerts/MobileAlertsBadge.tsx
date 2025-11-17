@@ -37,8 +37,8 @@ export function MobileAlertsBadge() {
   const unreadCount = getUnreadCount()
 
   useEffect(() => {
-    fetchAlerts()
-  }, [fetchAlerts])
+    fetchAlerts(true) // Only fetch on initial mount
+  }, [])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {

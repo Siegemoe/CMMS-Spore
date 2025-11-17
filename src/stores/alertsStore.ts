@@ -11,7 +11,7 @@ interface AlertState {
   error: string | null
 
   // Actions
-  fetchAlerts: () => Promise<void>
+  fetchAlerts: (forceRefresh?: boolean) => Promise<void>
   addAlert: (alert: Omit<Alert, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>
   markAsRead: (alertId: string) => Promise<void>
   markAllAsRead: () => Promise<void>
@@ -55,7 +55,12 @@ export const useAlertsStore = create<AlertState>()(
       isLoading: false,
       error: null,
 
-      fetchAlerts: async () => {
+      fetchAlerts: async (forceRefresh?: boolean) => {
+        const currentState = get()
+        if (!forceRefresh && currentState.alerts.length > 0) {
+          return // Don't refetch if we already have alerts
+        }
+
         set({ isLoading: true, error: null })
         try {
           const response = await fetch('/api/alerts/sample')

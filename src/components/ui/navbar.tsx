@@ -186,7 +186,7 @@ export default function Navbar() {
 
           {/* Mobile menu panel */}
           <div id="mobile-menu" className={`md:hidden transition-all duration-300 ease-in-out relative z-dropdown ${
-            isMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            isMenuOpen ? 'max-h-[28rem] opacity-100' : 'max-h-0 opacity-0'
           }`}>
             <div className="px-2 pt-2 pb-3 space-y-1 border-t border-blue-400">
               <Link
