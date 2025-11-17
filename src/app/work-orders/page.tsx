@@ -6,12 +6,12 @@ import Navbar from "@/components/ui/navbar"
 import { Loading } from "@/components/shared"
 import EnhancedWorkOrderForm from "@/components/work-orders/EnhancedWorkOrderForm"
 import { useAuthRedirect, useStatusColors, usePriorityColors, useWorkTypeColors, useApiEndpoints } from "@/hooks"
-import { WorkOrder, WorkOrderLocationInfo, WorkOrderRoom, WorkOrderBuilding } from "@/types/work-order"
+import { WorkOrder, WorkOrderLocationInfo, WorkOrderBuilding } from "@/types/work-order"
 import { Asset } from "@/types/asset"
 
 
 export default function WorkOrders() {
-  const { session, isLoading, isAuthenticated } = useAuthRedirect()
+  const { isLoading, isAuthenticated } = useAuthRedirect()
   const { getStatusColor } = useStatusColors()
   const { getPriorityColor } = usePriorityColors()
   const { getWorkTypeColor } = useWorkTypeColors()

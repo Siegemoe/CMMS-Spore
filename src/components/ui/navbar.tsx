@@ -1,6 +1,6 @@
 "use client"
 
-import { useSession, signOut } from "next-auth/react"
+import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
@@ -19,9 +19,6 @@ export default function Navbar() {
   if (!session) return null
 
   const isActive = (path: string) => pathname === path
-
-  // Helper function to ensure proper ARIA values
-  const getAriaExpanded = () => isMenuOpen ? "true" : "false"
 
   return (
     <>

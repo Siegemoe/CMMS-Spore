@@ -9,7 +9,7 @@ interface EnhancedWorkOrderFormProps {
   assets: Asset[]
 }
 
-function EnhancedWorkOrderForm({ onWorkOrderCreated, onCancel, assets }: EnhancedWorkOrderFormProps) {
+function EnhancedWorkOrderForm({ onWorkOrderCreated, onCancel }: EnhancedWorkOrderFormProps) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",

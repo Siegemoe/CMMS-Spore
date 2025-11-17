@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
+import { withErrorHandling, createAppError } from "@/utils/errorHandler"
 
 interface ApiState<T> {
   data: T | null
@@ -14,6 +15,9 @@ interface ApiOptions {
   headers?: Record<string, string>
   onSuccess?: (data: any) => void
   onError?: (error: string) => void
+  showToast?: boolean
+  userFriendlyMessage?: string
+  context?: Record<string, any>
   [key: string]: any // Allow additional properties like status
 }
 
@@ -38,12 +42,14 @@ export function useApi<T = any>(initialState: Partial<ApiState<T>> = {}) {
       body,
       headers = {},
       onSuccess,
-      onError
+      onError,
+      userFriendlyMessage,
+      context
     } = options
 
     setState(prev => ({ ...prev, loading: true, error: null }))
 
-    try {
+    const apiCall = async () => {
       const config: RequestInit = {
         method,
         headers: {
@@ -64,11 +70,30 @@ export function useApi<T = any>(initialState: Partial<ApiState<T>> = {}) {
         throw new Error(errorMessage)
       }
 
+      return responseData
+    }
+
+    try {
+      const wrappedApiCall = withErrorHandling(apiCall, {
+        logToConsole: true,
+        logToServer: process.env.NODE_ENV === 'production',
+        showToast: options.showToast,
+        userFriendlyMessage,
+        context: { url, method, ...context }
+      })
+
+      const responseData = await wrappedApiCall()
+
       setState(prev => ({ ...prev, data: responseData, loading: false, error: null }))
       onSuccess?.(responseData)
       return responseData
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+      const appError = createAppError(error, {
+        userFriendlyMessage,
+        context: { url, method, ...context }
+      })
+
+      const errorMessage = appError.userFriendlyMessage || appError.message
       setState(prev => ({ ...prev, error: errorMessage, loading: false }))
       onError?.(errorMessage)
       throw error

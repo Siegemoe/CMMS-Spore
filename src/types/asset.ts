@@ -1,4 +1,3 @@
-import { Prisma } from '@prisma/client'
 import { BaseRoom, BaseBuilding, BaseSite, BaseUser, BaseCount, LocationInfo } from './shared'
 
 // Re-export shared types for backward compatibility and specific naming
