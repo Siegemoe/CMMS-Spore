@@ -101,8 +101,8 @@ describe('Validation Functions', () => {
       const result = validateRequest(createAssetSchema, minimalAsset)
 
       expect(result.success).toBe(true)
-      expect(result.data.name).toBe('Basic Asset')
-      expect(result.data.category).toBe('equipment')
+      expect(result.data?.name).toBe('Basic Asset')
+      expect(result.data?.category).toBe('equipment')
     })
 
     it('should reject invalid asset categories', () => {
@@ -145,8 +145,8 @@ describe('Validation Functions', () => {
       const result = validateRequest(createAssetSchema, invalidAsset)
 
       expect(result.success).toBe(false)
-      expect(result.errors.some(error => error.includes('255'))).toBe(true)
-      expect(result.errors.some(error => error.includes('1000'))).toBe(true)
+      expect(result.errors?.some(error => error.includes('255'))).toBe(true)
+      expect(result.errors?.some(error => error.includes('1000'))).toBe(true)
     })
   })
 
@@ -181,9 +181,9 @@ describe('Validation Functions', () => {
       const result = validateRequest(createWorkOrderSchema, minimalWorkOrder)
 
       expect(result.success).toBe(true)
-      expect(result.data.title).toBe('Basic Work Order')
-      expect(result.data.priority).toBe('MEDIUM') // Default value
-      expect(result.data.status).toBe('OPEN') // Default value
+      expect(result.data?.title).toBe('Basic Work Order')
+      expect(result.data?.priority).toBe('MEDIUM') // Default value
+      expect(result.data?.status).toBe('OPEN') // Default value
     })
 
     it('should reject invalid asset ID format', () => {
@@ -219,7 +219,7 @@ describe('Validation Functions', () => {
       const result = validateRequest(createWorkOrderSchema, invalidWorkOrder)
 
       expect(result.success).toBe(false)
-      expect(result.errors.length).toBeGreaterThan(0)
+      expect(result.errors?.length || 0).toBeGreaterThan(0)
     })
   })
 
@@ -259,7 +259,7 @@ describe('Validation Functions', () => {
           const result = validateRequest(registerUserSchema, invalidUser)
 
           expect(result.success).toBe(false)
-          expect(result.errors.length).toBeGreaterThan(0)
+          expect(result.errors?.length || 0).toBeGreaterThan(0)
         })
       })
 

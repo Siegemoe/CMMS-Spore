@@ -5,63 +5,9 @@ import { useEffect, useState } from "react"
 import Navbar from "@/components/ui/navbar"
 import { Loading } from "@/components/shared"
 import { useAuthRedirect, useStatusColors, usePriorityColors, useWorkTypeColors } from "@/hooks"
+import { WorkOrder, WorkOrderLocationInfo, WorkOrderRoom, WorkOrderBuilding } from "@/types/work-order"
+import { Asset } from "@/types/asset"
 
-interface WorkOrder {
-  id: string
-  workOrderNumber: string
-  title: string
-  description: string | null
-  priority: string
-  status: string
-  assetId: string
-  asset: {
-    name: string
-    assetTag: string | null
-    site: {
-      id: string
-      name: string
-      address: string | null
-    } | null
-    building: {
-      id: string
-      name: string
-      number: string
-    } | null
-    room: {
-      id: string
-      number: string
-      floor: number | null
-    } | null
-  }
-  assignedTo: {
-    name: string | null
-    email: string
-  } | null
-  createdBy: {
-    name: string | null
-    email: string
-  }
-  workType: string
-  scopeOfWork: string | null
-  partsRequired: string | null
-  toolsRequired: string | null
-  otherResources: string | null
-  safetyNotes: string | null
-  estimatedStart: string | null
-  estimatedCompletion: string | null
-  ticketType: string | null
-  siteLocation: string | null
-  roomLocation: string | null
-  assetLocation: string | null
-  createdAt: string
-  updatedAt: string
-}
-
-interface Asset {
-  id: string
-  name: string
-  assetTag: string | null
-}
 
 export default function WorkOrders() {
   const { session, isLoading, isAuthenticated } = useAuthRedirect()
@@ -108,32 +54,40 @@ export default function WorkOrders() {
     }
   }
 
-  const getWorkOrderLocation = (workOrder: WorkOrder) => {
+  const getWorkOrderLocation = (workOrder: WorkOrder): WorkOrderLocationInfo => {
     // Get location from the work order's asset
+
     if (workOrder.asset.site) {
       return {
         type: 'site',
         name: workOrder.asset.site.name,
         data: workOrder.asset.site
       }
-    } else if (workOrder.asset.building) {
+    }
+
+    if (workOrder.asset.building) {
       return {
         type: 'building',
         name: workOrder.asset.building.name,
         data: workOrder.asset.building
       }
-    } else if (workOrder.asset.room) {
+    }
+
+    if (workOrder.asset.room) {
+      const roomNumber = workOrder.asset.room?.number || 'Unknown'
+      // Use type assertion to bypass type narrowing issues
+      const buildingNumber = (workOrder.asset.building as WorkOrderBuilding | null)?.number || 'Unknown'
       return {
-        type: 'room' as const,
-        name: `${workOrder.asset.building?.number || 'Unknown'}-${(workOrder.asset.room as any).number}`,
+        type: 'room',
+        name: `${buildingNumber}-${roomNumber}`,
         data: workOrder.asset.room
       }
-    } else {
-      return {
-        type: 'location',
-        name: workOrder.assetLocation || workOrder.roomLocation || workOrder.siteLocation || 'Unknown Location',
-        data: null
-      }
+    }
+
+    return {
+      type: 'location',
+      name: workOrder.assetLocation || workOrder.roomLocation || workOrder.siteLocation || 'Unknown Location',
+      data: null
     }
   }
 
@@ -434,26 +388,6 @@ export default function WorkOrders() {
   )
 }
 
-interface AssetWithLocation {
-  id: string
-  name: string
-  assetTag: string | null
-  site: {
-    id: string
-    name: string
-    address: string | null
-  } | null
-  building: {
-    id: string
-    name: string
-    number: string
-  } | null
-  room: {
-    id: string
-    number: string
-    floor: number | null
-  } | null
-}
 
 interface EnhancedWorkOrderFormProps {
   onWorkOrderCreated: () => void
@@ -482,7 +416,7 @@ function EnhancedWorkOrderForm({ onWorkOrderCreated, onCancel, assets }: Enhance
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [assetsWithLocations, setAssetsWithLocations] = useState<AssetWithLocation[]>([])
+  const [assetsWithLocations, setAssetsWithLocations] = useState<Asset[]>([])
 
   // Fetch assets with location data when component mounts
   useEffect(() => {

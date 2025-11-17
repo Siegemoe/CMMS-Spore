@@ -9,6 +9,7 @@ interface User {
   name?: string | null
   email?: string | null
   image?: string | null
+  phone?: string | null
 }
 
 // Mobile floating profile badge

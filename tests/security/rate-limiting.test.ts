@@ -14,7 +14,13 @@
  */
 
 import { checkRateLimit, rateLimiters, RateLimitType } from '@/lib/rate-limit'
-import { securityTestUtils } from '@/tests/setup/security.setup'
+// Setup file loaded via jest.config.js - no import needed
+
+// Global test utilities from setup files
+declare global {
+  var apiTestUtils: any
+  var securityTestUtils: any
+}
 
 // Mock the rate limiter module
 const mockRateLimiter = {

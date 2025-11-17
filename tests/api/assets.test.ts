@@ -17,7 +17,13 @@
 
 import { NextRequest } from 'next/server'
 import { GET, POST } from '@/app/api/assets/route'
-import { apiTestUtils } from '@/tests/setup/api.setup'
+// Setup file loaded via jest.config.js - no import needed
+
+// Global test utilities from setup files
+declare global {
+  var apiTestUtils: any
+  var securityTestUtils: any
+}
 
 // Mock dependencies
 jest.mock('@/lib/auth', () => ({
@@ -350,7 +356,7 @@ describe('/api/assets API Tests', () => {
     })
 
     it('should include security headers in responses', async () => {
-      const mockAssets = []
+      const mockAssets: any[] = []
       const { prisma } = require('@/lib/prisma')
       prisma.asset.findMany.mockResolvedValue(mockAssets)
 
