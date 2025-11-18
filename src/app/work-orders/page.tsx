@@ -60,7 +60,7 @@ export default function WorkOrders() {
 
   // Combined state updates to reduce re-renders
   useEffect(() => {
-    if (workOrdersData || assetsData) {
+    if (workOrdersData !== undefined || assetsData !== undefined) {
       // Filter out archived work orders from main view
       const activeWorkOrders = workOrdersData
         ? workOrdersData.filter((workOrder: WorkOrder) => workOrder.status !== "ARCHIVED")
@@ -68,6 +68,9 @@ export default function WorkOrders() {
 
       setWorkOrders(activeWorkOrders)
       setAssets(assetsData || [])
+
+      // Set initial loading to false once we have data
+      setIsInitialLoading(false)
     }
   }, [workOrdersData, assetsData])
 
