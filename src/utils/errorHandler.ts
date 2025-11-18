@@ -95,8 +95,8 @@ export function createAppError(
     'severity' in error &&
     'message' in error &&
     'timestamp' in error &&
-    Object.values(ErrorType).includes(error.type) &&
-    Object.values(ErrorSeverity).includes(error.severity) &&
+    Object.values(ErrorType).includes(error.type as ErrorType) &&
+    Object.values(ErrorSeverity).includes(error.severity as ErrorSeverity) &&
     typeof error.message === 'string'
   ) {
     return error as AppError
