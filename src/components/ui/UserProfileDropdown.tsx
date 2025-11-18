@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { useSession, signOut } from "next-auth/react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import DarkModeToggle from "@/components/ui/dark-mode-toggle"
 
 interface User {
   name?: string | null
@@ -96,6 +97,8 @@ export function MobileProfileBadge() {
 
           {/* Menu Items */}
           <div className="py-1">
+            <DarkModeToggle variant="mobile" />
+
             <Link
               href="/connect"
               className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
@@ -273,6 +276,8 @@ export default function UserProfileDropdown() {
 
           {/* Menu Items */}
           <div className="py-1">
+            <DarkModeToggle />
+
             <Link
               href="/connect"
               className={`flex items-center px-4 py-2 text-sm transition-colors ${

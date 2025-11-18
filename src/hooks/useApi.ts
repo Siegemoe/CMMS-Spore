@@ -134,7 +134,8 @@ export function useFetch<T = any>(url: string | null = null, options: Omit<ApiOp
         setData(result)
         return result
       } catch (error) {
-        console.error('Auto-fetch failed:', error)
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+        console.error('Auto-fetch failed:', { error: errorMessage, url, stack: error instanceof Error ? error.stack : undefined })
       }
     }
   }, [fetch, url])

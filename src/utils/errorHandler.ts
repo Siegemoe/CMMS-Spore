@@ -87,13 +87,36 @@ export function createAppError(
   error: Error | unknown,
   options: Omit<ErrorHandlingOptions, 'showToast' | 'logToConsole' | 'logToServer'> = {}
 ): AppError {
-  // Check if it's already an AppError by checking the structure
-  if (error && typeof error === 'object' && 'type' in error && 'severity' in error && 'message' in error) {
+  // Check if it's already an AppError by checking the structure more thoroughly
+  if (
+    error &&
+    typeof error === 'object' &&
+    'type' in error &&
+    'severity' in error &&
+    'message' in error &&
+    'timestamp' in error &&
+    Object.values(ErrorType).includes(error.type) &&
+    Object.values(ErrorSeverity).includes(error.severity) &&
+    typeof error.message === 'string'
+  ) {
     return error as AppError
   }
 
   const { context, userFriendlyMessage } = options
   const timestamp = new Date()
+
+  // Handle null, undefined, or empty object cases
+  if (error === null || error === undefined || (typeof error === 'object' && Object.keys(error).length === 0)) {
+    return {
+      type: ErrorType.UNKNOWN,
+      severity: ErrorSeverity.MEDIUM,
+      message: 'Empty or null error occurred',
+      originalError: error,
+      context,
+      timestamp,
+      userFriendlyMessage: userFriendlyMessage || 'Something went wrong. Please try again.'
+    }
+  }
 
   if (error instanceof Error) {
     const type = determineErrorType(error)

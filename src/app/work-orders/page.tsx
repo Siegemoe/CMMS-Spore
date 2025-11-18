@@ -37,13 +37,20 @@ export default function WorkOrders() {
 
       setIsInitialLoading(true)
       try {
-        // Load both datasets in parallel
+        // Load both datasets in parallel with better error handling
         await Promise.all([
-          fetchWorkOrders(),
-          fetchAssets()
+          fetchWorkOrders().catch(err => {
+            console.error('Failed to fetch work orders:', err)
+            throw new Error(`Failed to fetch work orders: ${err instanceof Error ? err.message : 'Unknown error'}`)
+          }),
+          fetchAssets().catch(err => {
+            console.error('Failed to fetch assets:', err)
+            throw new Error(`Failed to fetch assets: ${err instanceof Error ? err.message : 'Unknown error'}`)
+          })
         ])
       } catch (error) {
-        console.error('Failed to load data:', error)
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+        console.error('Failed to load data:', { error: errorMessage, stack: error instanceof Error ? error.stack : undefined })
       } finally {
         if (isMounted) {
           setIsInitialLoading(false)
