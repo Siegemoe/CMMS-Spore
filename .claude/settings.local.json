@@ -13,7 +13,9 @@
       "Bash(npx tsx:*)",
       "Bash(curl:*)",
       "Bash(npx next build:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(Get-Content:*)",
+      "Bash(Measure-Object -Line)"
     ],
     "deny": [],
     "ask": []
