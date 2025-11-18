@@ -2,8 +2,6 @@
  * Component Styles - Reusable component classes
  * Contains styles for common components and design patterns
  */
-
-@layer components {
   /* Card Components */
   .card-modern {
     @apply bg-white rounded-xl shadow-modern border border-gray-100 transition-modern;
@@ -283,4 +281,3 @@
   .skeleton-card {
     @apply bg-gray-200 rounded-lg h-32;
   }
-}

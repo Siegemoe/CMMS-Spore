@@ -2,8 +2,6 @@
  * Utility Classes - Custom utilities and helpers
  * Contains all custom utility classes that extend Tailwind's functionality
  */
-
-@layer utilities {
   /* Text utilities */
   .line-clamp-2 {
     overflow: hidden;
@@ -259,4 +257,3 @@
   .text-responsive-2xl {
     @apply text-2xl sm:text-3xl;
   }
-}
