@@ -23,30 +23,53 @@ export default function WorkOrders() {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([])
   const [assets, setAssets] = useState<Asset[]>([])
   const [showForm, setShowForm] = useState(false)
+  const [isInitialLoading, setIsInitialLoading] = useState(true)
 
   const { execute: updateWorkOrder } = useUpdateWorkOrder('')
   const { execute: deleteWorkOrder } = useDeleteWorkOrder('')
 
+  // Cleanup function to cancel ongoing requests
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchWorkOrders()
-      fetchAssets()
+    let isMounted = true
+
+    const loadData = async () => {
+      if (!isAuthenticated || !isMounted) return
+
+      setIsInitialLoading(true)
+      try {
+        // Load both datasets in parallel
+        await Promise.all([
+          fetchWorkOrders(),
+          fetchAssets()
+        ])
+      } catch (error) {
+        console.error('Failed to load data:', error)
+      } finally {
+        if (isMounted) {
+          setIsInitialLoading(false)
+        }
+      }
+    }
+
+    loadData()
+
+    return () => {
+      isMounted = false
     }
   }, [isAuthenticated, fetchWorkOrders, fetchAssets])
 
+  // Combined state updates to reduce re-renders
   useEffect(() => {
-    if (workOrdersData) {
+    if (workOrdersData || assetsData) {
       // Filter out archived work orders from main view
-      const activeWorkOrders = workOrdersData.filter((workOrder: WorkOrder) => workOrder.status !== "ARCHIVED")
-      setWorkOrders(activeWorkOrders)
-    }
-  }, [workOrdersData])
+      const activeWorkOrders = workOrdersData
+        ? workOrdersData.filter((workOrder: WorkOrder) => workOrder.status !== "ARCHIVED")
+        : []
 
-  useEffect(() => {
-    if (assetsData) {
-      setAssets(assetsData)
+      setWorkOrders(activeWorkOrders)
+      setAssets(assetsData || [])
     }
-  }, [assetsData])
+  }, [workOrdersData, assetsData])
 
   const getWorkOrderLocation = (workOrder: WorkOrder): WorkOrderLocationInfo => {
     // Get location from the work order's asset
@@ -127,7 +150,7 @@ export default function WorkOrders() {
     return acc
   }, {} as Record<string, { type: string; name: string; data: any; workOrders: WorkOrder[] }>)
 
-  if (isLoading) {
+  if (isLoading || isInitialLoading) {
     return <Loading />
   }
 
@@ -157,9 +180,7 @@ export default function WorkOrders() {
 
         {showForm && <EnhancedWorkOrderForm onWorkOrderCreated={() => { fetchWorkOrders(); setShowForm(false); }} assets={assets} onCancel={() => setShowForm(false)} />}
 
-        {workOrdersLoading || assetsLoading ? (
-          <Loading />
-        ) : workOrders.length === 0 ? (
+        {workOrders.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-gray-400 text-6xl mb-4">🔧</div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">No work orders found</h3>

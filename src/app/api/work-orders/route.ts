@@ -7,7 +7,7 @@ import { activityHelpers } from "@/lib/robust-activity-logger"
 export async function GET() {
   try {
     const workOrders = await prisma.workOrder.findMany({
-      take: 100, // Limit to 100 most recent work orders for performance
+      take: 50, // Reduced to 50 for better performance
       include: {
         asset: {
           select: {
@@ -17,7 +17,6 @@ export async function GET() {
               select: {
                 id: true,
                 name: true,
-                address: true,
               },
             },
             building: {
@@ -31,7 +30,6 @@ export async function GET() {
               select: {
                 id: true,
                 number: true,
-                floor: true,
               },
             },
           },
@@ -49,9 +47,10 @@ export async function GET() {
           },
         },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: [
+        { status: 'asc' }, // Show open work orders first
+        { createdAt: "desc" }
+      ],
     })
 
     return NextResponse.json(workOrders)

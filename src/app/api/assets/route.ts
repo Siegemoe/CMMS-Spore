@@ -20,19 +20,15 @@ export async function GET(request: NextRequest) {
 
   try {
     const assets = await prisma.asset.findMany({
-      take: 100, // Limit to 100 most recent assets for performance
-      include: {
-        createdBy: {
-          select: {
-            name: true,
-            email: true,
-          },
-        },
+      take: 50, // Reduced to 50 for better performance
+      select: {
+        id: true,
+        name: true,
+        assetTag: true,
         site: {
           select: {
             id: true,
             name: true,
-            address: true,
           },
         },
         building: {
@@ -46,18 +42,13 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             number: true,
-            floor: true,
           },
         },
-        _count: {
-          select: {
-            workOrders: true,
-          },
-        },
+        status: true,
       },
       orderBy: {
-        createdAt: "desc",
-      },
+        updatedAt: 'desc'
+      }
     })
 
     return createSecurityResponse(
