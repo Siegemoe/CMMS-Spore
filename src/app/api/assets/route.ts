@@ -24,7 +24,14 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         name: true,
+        description: true,
         assetTag: true,
+        category: true,
+        location: true,
+        status: true,
+        purchaseDate: true,
+        purchaseCost: true,
+        warrantyEnd: true,
         site: {
           select: {
             id: true,
@@ -45,7 +52,11 @@ export async function GET(request: NextRequest) {
             floor: true,
           },
         },
-        status: true,
+        _count: {
+          select: {
+            workOrders: true,
+          },
+        },
       },
       orderBy: {
         updatedAt: 'desc'
