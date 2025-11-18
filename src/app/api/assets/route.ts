@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             number: true,
+            floor: true,
           },
         },
         status: true,
